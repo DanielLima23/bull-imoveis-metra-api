@@ -1,0 +1,16 @@
+﻿version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    container_name: imoveis-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: imoveis_api_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - imoveis_pg_data:/var/lib/postgresql/data
+
+volumes:
+  imoveis_pg_data:

@@ -1,0 +1,581 @@
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (41ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND
+          c.relname='__EFMigrationsHistory'
+)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND
+          c.relname='__EFMigrationsHistory'
+)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND
+          c.relname='__EFMigrationsHistory'
+)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM users AS u
+          WHERE u."Email" = 'admin@imoveis.dev')
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM users AS u
+          WHERE u."Email" = 'operador@imoveis.dev')
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM expense_types AS e)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM pendency_types AS p)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM system_settings AS s)
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5140
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Projetos\API\imoveis-api\Imoveis.Api
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@__monthStart_0='?' (DbType = Date), @__monthEnd_1='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."DueDate" >= @__monthStart_0 AND e."DueDate" <= @__monthEnd_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__monthStartUtc_0='?' (DbType = DateTime), @__monthEndUtc_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."PaidAtUtc" IS NOT NULL AND e."PaidAtUtc" >= @__monthStartUtc_0 AND e."PaidAtUtc" <= @__monthEndUtc_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__today_0='?' (DbType = Date), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Amount", t."CreatedAtUtc", t."DueDate", t."InstallmentNumber", t."PaidAmount", t."PaidAtUtc", t."PropertyExpenseId", t."Status", t."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM (
+          SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc"
+          FROM expense_installments AS e
+          WHERE e."DueDate" < @__today_0 AND e."Status" <> 'PAID'
+          ORDER BY e."DueDate", e."Amount" DESC
+          LIMIT @__p_1
+      ) AS t
+      INNER JOIN property_expenses AS p ON t."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      ORDER BY t."DueDate", t."Amount" DESC
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", p0."Id", p0."Amount", p0."CreatedAtUtc", p0."EffectiveFrom", p0."PropertyId", p0."UpdatedAtUtc", l."Id", l."CreatedAtUtc", l."DepositAmount", l."EndDate", l."MonthlyRent", l."Notes", l."PropertyId", l."StartDate", l."Status", l."TenantId", l."UpdatedAtUtc"
+      FROM properties AS p
+      LEFT JOIN property_rent_references AS p0 ON p."Id" = p0."PropertyId"
+      LEFT JOIN lease_contracts AS l ON p."Id" = l."PropertyId"
+      ORDER BY p."Id", p0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."CreatedAtUtc", t."Description", t."DueAtUtc", t."OpenedAtUtc", t."PendencyTypeId", t."PropertyId", t."ResolvedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", p1."Id", p1."CreatedAtUtc", p1."DefaultSlaDays", p1."Name", p1."UpdatedAtUtc"
+      FROM (
+          SELECT p."Id", p."CreatedAtUtc", p."Description", p."DueAtUtc", p."OpenedAtUtc", p."PendencyTypeId", p."PropertyId", p."ResolvedAtUtc", p."Status", p."Title", p."UpdatedAtUtc"
+          FROM pendency_items AS p
+          WHERE p."Status" = 'OPEN'
+          ORDER BY p."DueAtUtc"
+          LIMIT @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      INNER JOIN pendency_types AS p1 ON t."PendencyTypeId" = p1."Id"
+      ORDER BY t."DueAtUtc"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM pendency_items AS p
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."CreatedAtUtc", t."Description", t."DueAtUtc", t."OpenedAtUtc", t."PendencyTypeId", t."PropertyId", t."ResolvedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", p1."Id", p1."CreatedAtUtc", p1."DefaultSlaDays", p1."Name", p1."UpdatedAtUtc"
+      FROM (
+          SELECT p."Id", p."CreatedAtUtc", p."Description", p."DueAtUtc", p."OpenedAtUtc", p."PendencyTypeId", p."PropertyId", p."ResolvedAtUtc", p."Status", p."Title", p."UpdatedAtUtc"
+          FROM pendency_items AS p
+          ORDER BY p."DueAtUtc", p."CreatedAtUtc" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      INNER JOIN pendency_types AS p1 ON t."PendencyTypeId" = p1."Id"
+      ORDER BY t."DueAtUtc", t."CreatedAtUtc" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM tenants AS t
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Name", t."DocumentNumber", t."Email", t."Phone", t."IsActive", t."CreatedAtUtc"
+      FROM tenants AS t
+      ORDER BY t."Name"
+      LIMIT @__p_1 OFFSET @__p_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p5='?' (DbType = Guid), @p0='?', @p1='?', @p2='?', @p3='?', @p4='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE system_settings SET "AccentColor" = @p0, "PrimaryColor" = @p1, "SecondaryColor" = @p2, "ThemePreset" = @p3, "UpdatedAtUtc" = @p4
+      WHERE "Id" = @p5;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__monthStart_0='?' (DbType = Date), @__monthEnd_1='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."DueDate" >= @__monthStart_0 AND e."DueDate" <= @__monthEnd_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__monthStartUtc_0='?' (DbType = DateTime), @__monthEndUtc_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."PaidAtUtc" IS NOT NULL AND e."PaidAtUtc" >= @__monthStartUtc_0 AND e."PaidAtUtc" <= @__monthEndUtc_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__today_0='?' (DbType = Date), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Amount", t."CreatedAtUtc", t."DueDate", t."InstallmentNumber", t."PaidAmount", t."PaidAtUtc", t."PropertyExpenseId", t."Status", t."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM (
+          SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc"
+          FROM expense_installments AS e
+          WHERE e."DueDate" < @__today_0 AND e."Status" <> 'PAID'
+          ORDER BY e."DueDate", e."Amount" DESC
+          LIMIT @__p_1
+      ) AS t
+      INNER JOIN property_expenses AS p ON t."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      ORDER BY t."DueDate", t."Amount" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", p0."Id", p0."Amount", p0."CreatedAtUtc", p0."EffectiveFrom", p0."PropertyId", p0."UpdatedAtUtc", l."Id", l."CreatedAtUtc", l."DepositAmount", l."EndDate", l."MonthlyRent", l."Notes", l."PropertyId", l."StartDate", l."Status", l."TenantId", l."UpdatedAtUtc"
+      FROM properties AS p
+      LEFT JOIN property_rent_references AS p0 ON p."Id" = p0."PropertyId"
+      LEFT JOIN lease_contracts AS l ON p."Id" = l."PropertyId"
+      ORDER BY p."Id", p0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."CreatedAtUtc", t."Description", t."DueAtUtc", t."OpenedAtUtc", t."PendencyTypeId", t."PropertyId", t."ResolvedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", p1."Id", p1."CreatedAtUtc", p1."DefaultSlaDays", p1."Name", p1."UpdatedAtUtc"
+      FROM (
+          SELECT p."Id", p."CreatedAtUtc", p."Description", p."DueAtUtc", p."OpenedAtUtc", p."PendencyTypeId", p."PropertyId", p."ResolvedAtUtc", p."Status", p."Title", p."UpdatedAtUtc"
+          FROM pendency_items AS p
+          WHERE p."Status" = 'OPEN'
+          ORDER BY p."DueAtUtc"
+          LIMIT @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      INNER JOIN pendency_types AS p1 ON t."PendencyTypeId" = p1."Id"
+      ORDER BY t."DueAtUtc"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM pendency_items AS p
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."CreatedAtUtc", t."Description", t."DueAtUtc", t."OpenedAtUtc", t."PendencyTypeId", t."PropertyId", t."ResolvedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", p1."Id", p1."CreatedAtUtc", p1."DefaultSlaDays", p1."Name", p1."UpdatedAtUtc"
+      FROM (
+          SELECT p."Id", p."CreatedAtUtc", p."Description", p."DueAtUtc", p."OpenedAtUtc", p."PendencyTypeId", p."PropertyId", p."ResolvedAtUtc", p."Status", p."Title", p."UpdatedAtUtc"
+          FROM pendency_items AS p
+          ORDER BY p."DueAtUtc", p."CreatedAtUtc" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      INNER JOIN pendency_types AS p1 ON t."PendencyTypeId" = p1."Id"
+      ORDER BY t."DueAtUtc", t."CreatedAtUtc" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM property_visits AS p
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."ContactName", t."ContactPhone", t."CreatedAtUtc", t."Notes", t."PropertyId", t."ResponsibleName", t."ScheduledAtUtc", t."Status", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode"
+      FROM (
+          SELECT p."Id", p."ContactName", p."ContactPhone", p."CreatedAtUtc", p."Notes", p."PropertyId", p."ResponsibleName", p."ScheduledAtUtc", p."Status", p."UpdatedAtUtc"
+          FROM property_visits AS p
+          ORDER BY p."ScheduledAtUtc" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      ORDER BY t."ScheduledAtUtc" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__monthStart_0='?' (DbType = Date), @__monthEnd_1='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."DueDate" >= @__monthStart_0 AND e."DueDate" <= @__monthEnd_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__monthStartUtc_0='?' (DbType = DateTime), @__monthEndUtc_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."PaidAtUtc" IS NOT NULL AND e."PaidAtUtc" >= @__monthStartUtc_0 AND e."PaidAtUtc" <= @__monthEndUtc_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__today_0='?' (DbType = Date), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Amount", t."CreatedAtUtc", t."DueDate", t."InstallmentNumber", t."PaidAmount", t."PaidAtUtc", t."PropertyExpenseId", t."Status", t."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM (
+          SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc"
+          FROM expense_installments AS e
+          WHERE e."DueDate" < @__today_0 AND e."Status" <> 'PAID'
+          ORDER BY e."DueDate", e."Amount" DESC
+          LIMIT @__p_1
+      ) AS t
+      INNER JOIN property_expenses AS p ON t."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      ORDER BY t."DueDate", t."Amount" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", p0."Id", p0."Amount", p0."CreatedAtUtc", p0."EffectiveFrom", p0."PropertyId", p0."UpdatedAtUtc", l."Id", l."CreatedAtUtc", l."DepositAmount", l."EndDate", l."MonthlyRent", l."Notes", l."PropertyId", l."StartDate", l."Status", l."TenantId", l."UpdatedAtUtc"
+      FROM properties AS p
+      LEFT JOIN property_rent_references AS p0 ON p."Id" = p0."PropertyId"
+      LEFT JOIN lease_contracts AS l ON p."Id" = l."PropertyId"
+      ORDER BY p."Id", p0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."CreatedAtUtc", t."Description", t."DueAtUtc", t."OpenedAtUtc", t."PendencyTypeId", t."PropertyId", t."ResolvedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", p1."Id", p1."CreatedAtUtc", p1."DefaultSlaDays", p1."Name", p1."UpdatedAtUtc"
+      FROM (
+          SELECT p."Id", p."CreatedAtUtc", p."Description", p."DueAtUtc", p."OpenedAtUtc", p."PendencyTypeId", p."PropertyId", p."ResolvedAtUtc", p."Status", p."Title", p."UpdatedAtUtc"
+          FROM pendency_items AS p
+          WHERE p."Status" = 'OPEN'
+          ORDER BY p."DueAtUtc"
+          LIMIT @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      INNER JOIN pendency_types AS p1 ON t."PendencyTypeId" = p1."Id"
+      ORDER BY t."DueAtUtc"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM tenants AS t
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Name", t."DocumentNumber", t."Email", t."Phone", t."IsActive", t."CreatedAtUtc"
+      FROM tenants AS t
+      ORDER BY t."Name"
+      LIMIT @__p_1 OFFSET @__p_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM properties AS p
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."Name", p."DefaultSlaDays"
+      FROM pendency_types AS p
+      ORDER BY p."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", (
+          SELECT p0."Amount"
+          FROM property_rent_references AS p0
+          WHERE p."Id" = p0."PropertyId"
+          ORDER BY p0."EffectiveFrom" DESC
+          LIMIT 1) AS "CurrentRent"
+      FROM properties AS p
+      ORDER BY p."Title"
+      LIMIT @__p_1 OFFSET @__p_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Name", e."Category", e."IsFixedCost"
+      FROM expense_types AS e
+      ORDER BY e."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM maintenance_requests AS m
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."ActualCost", t."CreatedAtUtc", t."Description", t."EstimatedCost", t."FinishedAtUtc", t."Priority", t."PropertyId", t."RequestedAtUtc", t."StartedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode"
+      FROM (
+          SELECT m."Id", m."ActualCost", m."CreatedAtUtc", m."Description", m."EstimatedCost", m."FinishedAtUtc", m."Priority", m."PropertyId", m."RequestedAtUtc", m."StartedAtUtc", m."Status", m."Title", m."UpdatedAtUtc"
+          FROM maintenance_requests AS m
+          ORDER BY m."RequestedAtUtc" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN properties AS p ON t."PropertyId" = p."Id"
+      ORDER BY t."RequestedAtUtc" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__monthStart_0='?' (DbType = Date), @__monthEnd_1='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."DueDate" >= @__monthStart_0 AND e."DueDate" <= @__monthEnd_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__monthStartUtc_0='?' (DbType = DateTime), @__monthEndUtc_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."PaidAtUtc" IS NOT NULL AND e."PaidAtUtc" >= @__monthStartUtc_0 AND e."PaidAtUtc" <= @__monthEndUtc_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__today_0='?' (DbType = Date), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Amount", t."CreatedAtUtc", t."DueDate", t."InstallmentNumber", t."PaidAmount", t."PaidAtUtc", t."PropertyExpenseId", t."Status", t."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM (
+          SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc"
+          FROM expense_installments AS e
+          WHERE e."DueDate" < @__today_0 AND e."Status" <> 'PAID'
+          ORDER BY e."DueDate", e."Amount" DESC
+          LIMIT @__p_1
+      ) AS t
+      INNER JOIN property_expenses AS p ON t."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      ORDER BY t."DueDate", t."Amount" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", p0."Id", p0."Amount", p0."CreatedAtUtc", p0."EffectiveFrom", p0."PropertyId", p0."UpdatedAtUtc", l."Id", l."CreatedAtUtc", l."DepositAmount", l."EndDate", l."MonthlyRent", l."Notes", l."PropertyId", l."StartDate", l."Status", l."TenantId", l."UpdatedAtUtc"
+      FROM properties AS p
+      LEFT JOIN property_rent_references AS p0 ON p."Id" = p0."PropertyId"
+      LEFT JOIN lease_contracts AS l ON p."Id" = l."PropertyId"
+      ORDER BY p."Id", p0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."CreatedAtUtc", t."Description", t."DueAtUtc", t."OpenedAtUtc", t."PendencyTypeId", t."PropertyId", t."ResolvedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", p1."Id", p1."CreatedAtUtc", p1."DefaultSlaDays", p1."Name", p1."UpdatedAtUtc"
+      FROM (
+          SELECT p."Id", p."CreatedAtUtc", p."Description", p."DueAtUtc", p."OpenedAtUtc", p."PendencyTypeId", p."PropertyId", p."ResolvedAtUtc", p."Status", p."Title", p."UpdatedAtUtc"
+          FROM pendency_items AS p
+          WHERE p."Status" = 'OPEN'
+          ORDER BY p."DueAtUtc"
+          LIMIT @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      INNER JOIN pendency_types AS p1 ON t."PendencyTypeId" = p1."Id"
+      ORDER BY t."DueAtUtc"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."Name", p."DefaultSlaDays"
+      FROM pendency_types AS p
+      ORDER BY p."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Name", e."Category", e."IsFixedCost"
+      FROM expense_types AS e
+      ORDER BY e."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM properties AS p
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", (
+          SELECT p0."Amount"
+          FROM property_rent_references AS p0
+          WHERE p."Id" = p0."PropertyId"
+          ORDER BY p0."EffectiveFrom" DESC
+          LIMIT 1) AS "CurrentRent"
+      FROM properties AS p
+      ORDER BY p."Title"
+      LIMIT @__p_1 OFFSET @__p_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p5='?' (DbType = Guid), @p0='?', @p1='?', @p2='?', @p3='?', @p4='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE system_settings SET "AccentColor" = @p0, "PrimaryColor" = @p1, "SecondaryColor" = @p2, "ThemePreset" = @p3, "UpdatedAtUtc" = @p4
+      WHERE "Id" = @p5;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__monthStart_0='?' (DbType = Date), @__monthEnd_1='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."DueDate" >= @__monthStart_0 AND e."DueDate" <= @__monthEnd_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__monthStartUtc_0='?' (DbType = DateTime), @__monthEndUtc_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM expense_installments AS e
+      INNER JOIN property_expenses AS p ON e."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      WHERE e."PaidAtUtc" IS NOT NULL AND e."PaidAtUtc" >= @__monthStartUtc_0 AND e."PaidAtUtc" <= @__monthEndUtc_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__today_0='?' (DbType = Date), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Amount", t."CreatedAtUtc", t."DueDate", t."InstallmentNumber", t."PaidAmount", t."PaidAtUtc", t."PropertyExpenseId", t."Status", t."UpdatedAtUtc", p."Id", p."CreatedAtUtc", p."Description", p."DueDate", p."ExpenseTypeId", p."Frequency", p."InstallmentsCount", p."IsRecurring", p."Notes", p."PropertyId", p."Status", p."TotalAmount", p."UpdatedAtUtc", p."YearlyMonth", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", e0."Id", e0."Category", e0."CreatedAtUtc", e0."IsFixedCost", e0."Name", e0."UpdatedAtUtc"
+      FROM (
+          SELECT e."Id", e."Amount", e."CreatedAtUtc", e."DueDate", e."InstallmentNumber", e."PaidAmount", e."PaidAtUtc", e."PropertyExpenseId", e."Status", e."UpdatedAtUtc"
+          FROM expense_installments AS e
+          WHERE e."DueDate" < @__today_0 AND e."Status" <> 'PAID'
+          ORDER BY e."DueDate", e."Amount" DESC
+          LIMIT @__p_1
+      ) AS t
+      INNER JOIN property_expenses AS p ON t."PropertyExpenseId" = p."Id"
+      INNER JOIN properties AS p0 ON p."PropertyId" = p0."Id"
+      INNER JOIN expense_types AS e0 ON p."ExpenseTypeId" = e0."Id"
+      ORDER BY t."DueDate", t."Amount" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", p0."Id", p0."Amount", p0."CreatedAtUtc", p0."EffectiveFrom", p0."PropertyId", p0."UpdatedAtUtc", l."Id", l."CreatedAtUtc", l."DepositAmount", l."EndDate", l."MonthlyRent", l."Notes", l."PropertyId", l."StartDate", l."Status", l."TenantId", l."UpdatedAtUtc"
+      FROM properties AS p
+      LEFT JOIN property_rent_references AS p0 ON p."Id" = p0."PropertyId"
+      LEFT JOIN lease_contracts AS l ON p."Id" = l."PropertyId"
+      ORDER BY p."Id", p0."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."CreatedAtUtc", t."Description", t."DueAtUtc", t."OpenedAtUtc", t."PendencyTypeId", t."PropertyId", t."ResolvedAtUtc", t."Status", t."Title", t."UpdatedAtUtc", p0."Id", p0."AddressLine1", p0."City", p0."Code", p0."CreatedAtUtc", p0."Notes", p0."PropertyType", p0."State", p0."Status", p0."Title", p0."UpdatedAtUtc", p0."ZipCode", p1."Id", p1."CreatedAtUtc", p1."DefaultSlaDays", p1."Name", p1."UpdatedAtUtc"
+      FROM (
+          SELECT p."Id", p."CreatedAtUtc", p."Description", p."DueAtUtc", p."OpenedAtUtc", p."PendencyTypeId", p."PropertyId", p."ResolvedAtUtc", p."Status", p."Title", p."UpdatedAtUtc"
+          FROM pendency_items AS p
+          WHERE p."Status" = 'OPEN'
+          ORDER BY p."DueAtUtc"
+          LIMIT @__p_0
+      ) AS t
+      INNER JOIN properties AS p0 ON t."PropertyId" = p0."Id"
+      INNER JOIN pendency_types AS p1 ON t."PendencyTypeId" = p1."Id"
+      ORDER BY t."DueAtUtc"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM properties AS p
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", (
+          SELECT p0."Amount"
+          FROM property_rent_references AS p0
+          WHERE p."Id" = p0."PropertyId"
+          ORDER BY p0."EffectiveFrom" DESC
+          LIMIT 1) AS "CurrentRent"
+      FROM properties AS p
+      ORDER BY p."Title"
+      LIMIT @__p_1 OFFSET @__p_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."Name", p."DefaultSlaDays"
+      FROM pendency_types AS p
+      ORDER BY p."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Name", e."Category", e."IsFixedCost"
+      FROM expense_types AS e
+      ORDER BY e."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AccentColor", s."BrandName", s."BrandShortName", s."CreatedAtUtc", s."EnableAnimations", s."PrimaryColor", s."SecondaryColor", s."ThemePreset", s."UpdatedAtUtc"
+      FROM system_settings AS s
+      ORDER BY s."CreatedAtUtc" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM properties AS p
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."AddressLine1", p."City", p."Code", p."CreatedAtUtc", p."Notes", p."PropertyType", p."State", p."Status", p."Title", p."UpdatedAtUtc", p."ZipCode", (
+          SELECT p0."Amount"
+          FROM property_rent_references AS p0
+          WHERE p."Id" = p0."PropertyId"
+          ORDER BY p0."EffectiveFrom" DESC
+          LIMIT 1) AS "CurrentRent"
+      FROM properties AS p
+      ORDER BY p."Title"
+      LIMIT @__p_1 OFFSET @__p_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT e."Id", e."Name", e."Category", e."IsFixedCost"
+      FROM expense_types AS e
+      ORDER BY e."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."Name", p."DefaultSlaDays"
+      FROM pendency_types AS p
+      ORDER BY p."Name"

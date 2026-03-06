@@ -1,0 +1,13 @@
+**/bin
+**/obj
+**/.vs
+**/.vscode
+**/.idea
+**/node_modules
+**/*.user
+**/*.suo
+**/*.cache
+.git
+.gitignore
+api.log
+api.err.log
