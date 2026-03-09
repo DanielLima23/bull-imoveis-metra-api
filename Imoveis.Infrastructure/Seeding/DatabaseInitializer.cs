@@ -1,4 +1,4 @@
-﻿using Imoveis.Application.Abstractions.Security;
+using Imoveis.Application.Abstractions.Security;
 using Imoveis.Domain.Entities;
 using Imoveis.Domain.Enums;
 using Imoveis.Infrastructure.Persistence;
@@ -17,6 +17,7 @@ public static class DatabaseInitializer
         var dbContext = provider.GetRequiredService<AppDbContext>();
         var passwordHasher = provider.GetRequiredService<IPasswordHasher>();
 
+        await dbContext.Database.ExecuteSqlRawAsync($"CREATE SCHEMA IF NOT EXISTS {AppDbContext.DatabaseSchema}");
         await dbContext.Database.MigrateAsync();
 
         await SeedUsersAsync(dbContext, passwordHasher);
@@ -27,6 +28,18 @@ public static class DatabaseInitializer
 
     private static async Task SeedUsersAsync(AppDbContext dbContext, IPasswordHasher passwordHasher)
     {
+        if (!await dbContext.Users.AnyAsync(x => x.Email == "super@dw-softwares.com.br"))
+        {
+            dbContext.Users.Add(new User
+            {
+                Name = "Super Usuario",
+                Email = "super@dw-softwares.com.br",
+                PasswordHash = passwordHasher.Hash("123456"),
+                Role = UserRole.ADMIN,
+                IsActive = true
+            });
+        }
+
         if (!await dbContext.Users.AnyAsync(x => x.Email == "admin@imoveis.dev"))
         {
             dbContext.Users.Add(new User

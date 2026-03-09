@@ -1,4 +1,4 @@
-﻿using Imoveis.Application.Abstractions.Security;
+using Imoveis.Application.Abstractions.Security;
 using Imoveis.Application.Abstractions.Services;
 using Imoveis.Infrastructure.Options;
 using Imoveis.Infrastructure.Persistence;
@@ -21,7 +21,8 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
-                npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+                npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
+                    .MigrationsHistoryTable("__EFMigrationsHistory", AppDbContext.DatabaseSchema)));
 
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
@@ -46,13 +47,13 @@ public static class DependencyInjection
         var databaseUrl = configuration["DATABASE_URL"];
         if (!string.IsNullOrWhiteSpace(databaseUrl))
         {
-            return ConvertDatabaseUrlToConnectionString(databaseUrl);
+            return NormalizeConnectionString(ConvertDatabaseUrlToConnectionString(databaseUrl));
         }
 
         var explicitConnectionString = configuration.GetConnectionString("Default");
         if (!string.IsNullOrWhiteSpace(explicitConnectionString))
         {
-            return explicitConnectionString;
+            return NormalizeConnectionString(explicitConnectionString);
         }
 
         throw new InvalidOperationException("ConnectionStrings:Default or DATABASE_URL must be configured.");
@@ -90,6 +91,18 @@ public static class DependencyInjection
             Password = password,
             Database = database
         };
+
+        return builder.ConnectionString;
+    }
+
+    private static string NormalizeConnectionString(string connectionString)
+    {
+        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+
+        if (string.IsNullOrWhiteSpace(builder.SearchPath))
+        {
+            builder.SearchPath = AppDbContext.DatabaseSchema;
+        }
 
         return builder.ConnectionString;
     }

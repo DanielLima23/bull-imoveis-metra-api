@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Npgsql;
 
 namespace Imoveis.Infrastructure.Persistence;
 
@@ -12,7 +13,13 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
             Environment.GetEnvironmentVariable("IMOVEIS_DB_CONNECTION")
             ?? "Host=localhost;Port=5432;Database=imoveis_api_dev;Username=postgres;Password=postgres";
 
-        optionsBuilder.UseNpgsql(connectionString);
+        var normalizedConnectionString = new NpgsqlConnectionStringBuilder(connectionString)
+        {
+            SearchPath = AppDbContext.DatabaseSchema
+        }.ConnectionString;
+
+        optionsBuilder.UseNpgsql(normalizedConnectionString, npgsql =>
+            npgsql.MigrationsHistoryTable("__EFMigrationsHistory", AppDbContext.DatabaseSchema));
 
         return new AppDbContext(optionsBuilder.Options);
     }

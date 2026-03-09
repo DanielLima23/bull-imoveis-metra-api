@@ -1,4 +1,4 @@
-﻿using Imoveis.Domain.Entities;
+using Imoveis.Domain.Entities;
 using Imoveis.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +6,8 @@ namespace Imoveis.Infrastructure.Persistence;
 
 public sealed class AppDbContext : DbContext
 {
+    public const string DatabaseSchema = "imoveis";
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }

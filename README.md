@@ -1,4 +1,4 @@
-﻿# Imoveis API (.NET 8 + PostgreSQL)
+# Imoveis API (.NET 8 + PostgreSQL)
 
 API REST para gestao de imoveis, locacoes, contas, pendencias, visitas e manutencoes.
 
@@ -31,6 +31,8 @@ Ajuste:
 - `Jwt:ExpiryMinutes`
 - `Jwt:RefreshExpiryDays`
 
+O backend usa o schema PostgreSQL `imoveis` como `Search Path`, sem depender do schema `public`.
+
 ## Rodar
 
 ```bash
@@ -54,6 +56,7 @@ dotnet ef database update --project Imoveis.Infrastructure --startup-project Imo
 ```
 
 ## Auth seed
+- `super@dw-softwares.com.br` / `123456`
 - `admin@imoveis.dev` / `123456`
 - `operador@imoveis.dev` / `123456`
 

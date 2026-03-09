@@ -1,0 +1,8 @@
+Imoveis.Api/bin/Debug/net8.0/Imoveis.Api.pdb
+Imoveis.Api/obj/Debug/net8.0/Imoveis.Api.csproj.CoreCompileInputs.cache
+Imoveis.Application/bin/Debug/net8.0/Imoveis.Domain.dll
+Imoveis.Application/obj/Debug/net8.0/Imoveis.Application.csproj.FileListAbsolute.txt
+Imoveis.Domain/obj/Debug/net8.0/Imoveis.Domain.AssemblyInfoInputs.cache
+Imoveis.Domain/bin/Debug/net8.0/Imoveis.Domain.dll
+Imoveis.Infrastructure/bin/Debug/net8.0/Imoveis.Application.dll
+Imoveis.Infrastructure/obj/Debug/net8.0/Imoveis.Infrastructure.assets.cache
