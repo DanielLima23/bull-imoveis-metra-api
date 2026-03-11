@@ -15,6 +15,11 @@ public sealed class LeaseContract : BaseEntity
     public DateOnly? EndDate { get; set; }
     public decimal MonthlyRent { get; set; }
     public decimal? DepositAmount { get; set; }
+    public string? AdjustmentIndex { get; set; }
+    public int? PaymentDay { get; set; }
+    public string? PaymentLocation { get; set; }
+    public string? GuaranteeType { get; set; }
+    public string? GuaranteeDetails { get; set; }
     public LeaseStatus Status { get; set; } = LeaseStatus.DRAFT;
     public string? Notes { get; set; }
 }

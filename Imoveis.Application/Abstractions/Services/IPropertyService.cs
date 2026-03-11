@@ -12,4 +12,11 @@ public interface IPropertyService
     Task<PropertyDto?> UpdateStatusAsync(Guid id, PropertyStatusUpdateRequest request, CancellationToken cancellationToken);
     Task<PropertyRentReferenceDto?> AddRentReferenceAsync(Guid propertyId, PropertyRentReferenceCreateRequest request, CancellationToken cancellationToken);
     Task<IReadOnlyList<PropertyRentReferenceDto>> GetRentHistoryAsync(Guid propertyId, CancellationToken cancellationToken);
+    Task<PropertyDetailDto?> GetDetailAsync(Guid propertyId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PropertyHistoryEntryDto>> GetHistoryAsync(Guid propertyId, CancellationToken cancellationToken);
+    Task<PropertyHistoryEntryDto?> AddHistoryAsync(Guid propertyId, PropertyHistoryEntryCreateRequest request, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PropertyDocumentDto>> GetDocumentsAsync(Guid propertyId, CancellationToken cancellationToken);
+    Task<PropertyDocumentDto?> AddDocumentAsync(Guid propertyId, PropertyDocumentCreateRequest request, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PropertyPartyLinkDto>> GetRelationshipsAsync(Guid propertyId, CancellationToken cancellationToken);
+    Task<PropertyPartyLinkDto?> LinkPartyAsync(Guid propertyId, PropertyPartyLinkCreateRequest request, CancellationToken cancellationToken);
 }

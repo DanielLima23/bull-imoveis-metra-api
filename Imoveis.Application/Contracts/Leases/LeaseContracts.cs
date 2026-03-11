@@ -1,4 +1,4 @@
-﻿namespace Imoveis.Application.Contracts.Leases;
+namespace Imoveis.Application.Contracts.Leases;
 
 public sealed record LeaseQueryRequest(Guid? PropertyId, Guid? TenantId, string? Status, int Page = 1, int PageSize = 20);
 
@@ -9,6 +9,11 @@ public sealed record LeaseCreateRequest(
     DateOnly? EndDate,
     decimal MonthlyRent,
     decimal? DepositAmount,
+    string? AdjustmentIndex,
+    int? PaymentDay,
+    string? PaymentLocation,
+    string? GuaranteeType,
+    string? GuaranteeDetails,
     string? Notes);
 
 public sealed record LeaseUpdateRequest(
@@ -17,6 +22,11 @@ public sealed record LeaseUpdateRequest(
     decimal MonthlyRent,
     decimal? DepositAmount,
     string Status,
+    string? AdjustmentIndex,
+    int? PaymentDay,
+    string? PaymentLocation,
+    string? GuaranteeType,
+    string? GuaranteeDetails,
     string? Notes);
 
 public sealed record LeaseCloseRequest(DateOnly EndDate);
@@ -32,5 +42,10 @@ public sealed record LeaseDto(
     decimal MonthlyRent,
     decimal? DepositAmount,
     string Status,
+    string? AdjustmentIndex,
+    int? PaymentDay,
+    string? PaymentLocation,
+    string? GuaranteeType,
+    string? GuaranteeDetails,
     string? Notes,
     DateTime CreatedAtUtc);

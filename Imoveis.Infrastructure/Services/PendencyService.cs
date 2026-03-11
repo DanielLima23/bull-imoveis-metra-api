@@ -1,4 +1,6 @@
-﻿using Imoveis.Application.Abstractions.Services;
+using System.Globalization;
+using System.Text;
+using Imoveis.Application.Abstractions.Services;
 using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Pendencies;
 using Imoveis.Domain.Entities;
@@ -22,7 +24,7 @@ public sealed class PendencyService : IPendencyService
         return await _dbContext.PendencyTypes
             .AsNoTracking()
             .OrderBy(x => x.Name)
-            .Select(x => new PendencyTypeDto(x.Id, x.Name, x.DefaultSlaDays))
+            .Select(x => new PendencyTypeDto(x.Id, x.Name, x.Acronym, x.Category, x.Description, x.DefaultSlaDays))
             .ToListAsync(cancellationToken);
     }
 
@@ -38,16 +40,21 @@ public sealed class PendencyService : IPendencyService
             throw new AppException("Pendency type already exists.", 409, "conflict_error");
         }
 
+        var acronym = await ResolveUniqueAcronymAsync(request.Name, request.Acronym, null, cancellationToken);
+
         var entity = new PendencyType
         {
             Name = request.Name.Trim(),
+            Acronym = acronym,
+            Category = string.IsNullOrWhiteSpace(request.Category) ? "GENERAL" : request.Category.Trim().ToUpperInvariant(),
+            Description = request.Description?.Trim(),
             DefaultSlaDays = request.DefaultSlaDays
         };
 
         _dbContext.PendencyTypes.Add(entity);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new PendencyTypeDto(entity.Id, entity.Name, entity.DefaultSlaDays);
+        return new PendencyTypeDto(entity.Id, entity.Name, entity.Acronym, entity.Category, entity.Description, entity.DefaultSlaDays);
     }
 
     public async Task<PendencyTypeDto?> UpdateTypeAsync(Guid id, PendencyTypeUpdateRequest request, CancellationToken cancellationToken)
@@ -69,11 +76,14 @@ public sealed class PendencyService : IPendencyService
         }
 
         entity.Name = request.Name.Trim();
+        entity.Acronym = await ResolveUniqueAcronymAsync(request.Name, request.Acronym, id, cancellationToken);
+        entity.Category = string.IsNullOrWhiteSpace(request.Category) ? "GENERAL" : request.Category.Trim().ToUpperInvariant();
+        entity.Description = request.Description?.Trim();
         entity.DefaultSlaDays = request.DefaultSlaDays;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new PendencyTypeDto(entity.Id, entity.Name, entity.DefaultSlaDays);
+        return new PendencyTypeDto(entity.Id, entity.Name, entity.Acronym, entity.Category, entity.Description, entity.DefaultSlaDays);
     }
 
     public async Task<PagedResult<PendencyDto>> QueryAsync(PendencyQueryRequest request, CancellationToken cancellationToken)
@@ -190,6 +200,38 @@ public sealed class PendencyService : IPendencyService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return ToDto(entity);
+    }
+
+    private async Task<string> ResolveUniqueAcronymAsync(string name, string? requestedAcronym, Guid? currentId, CancellationToken cancellationToken)
+    {
+        var baseAcronym = BuildAcronym(string.IsNullOrWhiteSpace(requestedAcronym) ? name : requestedAcronym);
+        var candidate = baseAcronym;
+        var suffix = 1;
+
+        while (await _dbContext.PendencyTypes.AnyAsync(x => x.Acronym == candidate && (!currentId.HasValue || x.Id != currentId.Value), cancellationToken))
+        {
+            candidate = $"{baseAcronym}{suffix}";
+            suffix++;
+        }
+
+        return candidate;
+    }
+
+    private static string BuildAcronym(string source)
+    {
+        var normalized = new string(
+            source
+                .Normalize(NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark)
+                .ToArray());
+
+        var cleaned = new string(normalized.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+        if (!string.IsNullOrWhiteSpace(cleaned))
+        {
+            return cleaned.Length > 8 ? cleaned[..8] : cleaned;
+        }
+
+        return "PEND";
     }
 
     private static PendencyDto ToDto(PendencyItem entity)

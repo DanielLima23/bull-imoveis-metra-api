@@ -17,8 +17,12 @@ public sealed class AppDbContext : DbContext
 
     public DbSet<Property> Properties => Set<Property>();
     public DbSet<PropertyRentReference> PropertyRentReferences => Set<PropertyRentReference>();
+    public DbSet<PropertyHistoryEntry> PropertyHistoryEntries => Set<PropertyHistoryEntry>();
+    public DbSet<PropertyDocument> PropertyDocuments => Set<PropertyDocument>();
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<LeaseContract> LeaseContracts => Set<LeaseContract>();
+    public DbSet<Party> Parties => Set<Party>();
+    public DbSet<PropertyPartyLink> PropertyPartyLinks => Set<PropertyPartyLink>();
 
     public DbSet<ExpenseType> ExpenseTypes => Set<ExpenseType>();
     public DbSet<PropertyExpense> PropertyExpenses => Set<PropertyExpense>();
@@ -73,6 +77,10 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.PropertyType).HasMaxLength(60).IsRequired();
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.Property(x => x.RegistrationNumber).HasMaxLength(120);
+            entity.Property(x => x.DeedNumber).HasMaxLength(120);
+            entity.Property(x => x.RegistrationCertificate).HasMaxLength(180);
+            entity.Property(x => x.VacancyReason).HasMaxLength(250);
         });
 
         modelBuilder.Entity<PropertyRentReference>(entity =>
@@ -100,6 +108,37 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.IsActive).HasDefaultValue(true);
         });
 
+        modelBuilder.Entity<Party>(entity =>
+        {
+            entity.ToTable("parties");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Kind).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(180).IsRequired();
+            entity.Property(x => x.DocumentNumber).HasMaxLength(40);
+            entity.Property(x => x.Email).HasMaxLength(180);
+            entity.Property(x => x.Phone).HasMaxLength(40);
+            entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+            entity.HasIndex(x => x.Name);
+        });
+
+        modelBuilder.Entity<PropertyPartyLink>(entity =>
+        {
+            entity.ToTable("property_party_links");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Role).HasConversion<string>().HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(1000);
+            entity.HasOne(x => x.Property)
+                .WithMany(x => x.PartyLinks)
+                .HasForeignKey(x => x.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Party)
+                .WithMany(x => x.PropertyLinks)
+                .HasForeignKey(x => x.PartyId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(x => new { x.PropertyId, x.PartyId, x.Role });
+        });
+
         modelBuilder.Entity<LeaseContract>(entity =>
         {
             entity.ToTable("lease_contracts");
@@ -109,6 +148,10 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.MonthlyRent).HasPrecision(18, 2).IsRequired();
             entity.Property(x => x.DepositAmount).HasPrecision(18, 2);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.AdjustmentIndex).HasMaxLength(50);
+            entity.Property(x => x.PaymentLocation).HasMaxLength(180);
+            entity.Property(x => x.GuaranteeType).HasMaxLength(60);
+            entity.Property(x => x.GuaranteeDetails).HasMaxLength(1000);
             entity.Property(x => x.Notes).HasMaxLength(2000);
 
             entity.HasOne(x => x.Property)
@@ -173,8 +216,12 @@ public sealed class AppDbContext : DbContext
             entity.ToTable("pendency_types");
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.Acronym).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Category).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(500);
             entity.Property(x => x.DefaultSlaDays).IsRequired();
             entity.HasIndex(x => x.Name).IsUnique();
+            entity.HasIndex(x => x.Acronym).IsUnique();
         });
 
         modelBuilder.Entity<PendencyItem>(entity =>
@@ -205,6 +252,33 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.HasOne(x => x.Property)
                 .WithMany(x => x.Visits)
+                .HasForeignKey(x => x.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PropertyHistoryEntry>(entity =>
+        {
+            entity.ToTable("property_history_entries");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Title).HasMaxLength(180).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(2000);
+            entity.HasOne(x => x.Property)
+                .WithMany(x => x.HistoryEntries)
+                .HasForeignKey(x => x.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.PropertyId, x.OccurredAtUtc });
+        });
+
+        modelBuilder.Entity<PropertyDocument>(entity =>
+        {
+            entity.ToTable("property_documents");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(180).IsRequired();
+            entity.Property(x => x.Kind).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Url).HasMaxLength(2000).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(1000);
+            entity.HasOne(x => x.Property)
+                .WithMany(x => x.Documents)
                 .HasForeignKey(x => x.PropertyId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

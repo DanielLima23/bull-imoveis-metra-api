@@ -32,6 +32,13 @@ public sealed class ImoveisController : ApiControllerBase
         return data is null ? NotFoundResponse() : OkResponse(data);
     }
 
+    [HttpGet("{id:guid}/detalhe")]
+    public async Task<ActionResult<ApiResponse<PropertyDetailDto>>> GetDetail(Guid id, CancellationToken cancellationToken)
+    {
+        var data = await _service.GetDetailAsync(id, cancellationToken);
+        return data is null ? NotFoundResponse() : OkResponse(data);
+    }
+
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<ApiResponse<PropertyDto>>> Create([FromBody] PropertyCreateRequest request, CancellationToken cancellationToken)
@@ -69,5 +76,50 @@ public sealed class ImoveisController : ApiControllerBase
     {
         var data = await _service.GetRentHistoryAsync(id, cancellationToken);
         return OkResponse(data);
+    }
+
+    [HttpGet("{id:guid}/historico")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<PropertyHistoryEntryDto>>>> History(Guid id, CancellationToken cancellationToken)
+    {
+        var data = await _service.GetHistoryAsync(id, cancellationToken);
+        return OkResponse(data);
+    }
+
+    [HttpPost("{id:guid}/historico")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<ApiResponse<PropertyHistoryEntryDto>>> AddHistory(Guid id, [FromBody] PropertyHistoryEntryCreateRequest request, CancellationToken cancellationToken)
+    {
+        var data = await _service.AddHistoryAsync(id, request, cancellationToken);
+        return data is null ? NotFoundResponse() : OkResponse(data);
+    }
+
+    [HttpGet("{id:guid}/documentos")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<PropertyDocumentDto>>>> Documents(Guid id, CancellationToken cancellationToken)
+    {
+        var data = await _service.GetDocumentsAsync(id, cancellationToken);
+        return OkResponse(data);
+    }
+
+    [HttpPost("{id:guid}/documentos")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<ApiResponse<PropertyDocumentDto>>> AddDocument(Guid id, [FromBody] PropertyDocumentCreateRequest request, CancellationToken cancellationToken)
+    {
+        var data = await _service.AddDocumentAsync(id, request, cancellationToken);
+        return data is null ? NotFoundResponse() : OkResponse(data);
+    }
+
+    [HttpGet("{id:guid}/relacionamentos")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<PropertyPartyLinkDto>>>> Relationships(Guid id, CancellationToken cancellationToken)
+    {
+        var data = await _service.GetRelationshipsAsync(id, cancellationToken);
+        return OkResponse(data);
+    }
+
+    [HttpPost("{id:guid}/relacionamentos")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<ApiResponse<PropertyPartyLinkDto>>> LinkParty(Guid id, [FromBody] PropertyPartyLinkCreateRequest request, CancellationToken cancellationToken)
+    {
+        var data = await _service.LinkPartyAsync(id, request, cancellationToken);
+        return data is null ? NotFoundResponse() : OkResponse(data);
     }
 }

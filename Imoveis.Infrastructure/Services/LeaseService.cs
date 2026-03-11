@@ -1,4 +1,4 @@
-﻿using Imoveis.Application.Abstractions.Services;
+using Imoveis.Application.Abstractions.Services;
 using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Leases;
 using Imoveis.Domain.Entities;
@@ -83,6 +83,11 @@ public sealed class LeaseService : ILeaseService
             EndDate = request.EndDate,
             MonthlyRent = request.MonthlyRent,
             DepositAmount = request.DepositAmount,
+            AdjustmentIndex = request.AdjustmentIndex?.Trim(),
+            PaymentDay = request.PaymentDay,
+            PaymentLocation = request.PaymentLocation?.Trim(),
+            GuaranteeType = request.GuaranteeType?.Trim(),
+            GuaranteeDetails = request.GuaranteeDetails?.Trim(),
             Notes = request.Notes?.Trim(),
             Status = LeaseStatus.ACTIVE
         };
@@ -112,11 +117,20 @@ public sealed class LeaseService : ILeaseService
         entity.MonthlyRent = request.MonthlyRent;
         entity.DepositAmount = request.DepositAmount;
         entity.Status = ServiceHelpers.ParseEnum<LeaseStatus>(request.Status, "status");
+        entity.AdjustmentIndex = request.AdjustmentIndex?.Trim();
+        entity.PaymentDay = request.PaymentDay;
+        entity.PaymentLocation = request.PaymentLocation?.Trim();
+        entity.GuaranteeType = request.GuaranteeType?.Trim();
+        entity.GuaranteeDetails = request.GuaranteeDetails?.Trim();
         entity.Notes = request.Notes?.Trim();
 
         if (entity.Status is LeaseStatus.ENDED or LeaseStatus.CANCELED)
         {
             entity.Property.Status = PropertyStatus.AVAILABLE;
+        }
+        else if (entity.Status == LeaseStatus.ACTIVE)
+        {
+            entity.Property.Status = PropertyStatus.LEASED;
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -147,7 +161,7 @@ public sealed class LeaseService : ILeaseService
 
     public async Task<IReadOnlyList<LeaseDto>> HistoryByPropertyAsync(Guid propertyId, CancellationToken cancellationToken)
     {
-        var items = await _dbContext.LeaseContracts
+        return await _dbContext.LeaseContracts
             .AsNoTracking()
             .Include(x => x.Property)
             .Include(x => x.Tenant)
@@ -155,8 +169,6 @@ public sealed class LeaseService : ILeaseService
             .OrderByDescending(x => x.StartDate)
             .Select(x => ToDto(x, x.Property.Title, x.Tenant.Name))
             .ToListAsync(cancellationToken);
-
-        return items;
     }
 
     private static LeaseDto ToDto(LeaseContract entity, string propertyTitle, string tenantName)
@@ -171,6 +183,11 @@ public sealed class LeaseService : ILeaseService
             entity.MonthlyRent,
             entity.DepositAmount,
             entity.Status.ToString(),
+            entity.AdjustmentIndex,
+            entity.PaymentDay,
+            entity.PaymentLocation,
+            entity.GuaranteeType,
+            entity.GuaranteeDetails,
             entity.Notes,
             entity.CreatedAtUtc);
 }
