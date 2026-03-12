@@ -122,6 +122,32 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                 maxLength: 180,
                 nullable: true);
 
+            migrationBuilder.Sql("""
+                WITH prepared AS (
+                    SELECT
+                        "Id",
+                        COALESCE(
+                            NULLIF(UPPER(LEFT(REGEXP_REPLACE("Name", '[^A-Za-z0-9]+', '', 'g'), 20)), ''),
+                            'PEND'
+                        ) AS base_acronym
+                    FROM pendency_types
+                ),
+                ranked AS (
+                    SELECT
+                        "Id",
+                        base_acronym,
+                        ROW_NUMBER() OVER (PARTITION BY base_acronym ORDER BY "Id") AS acronym_order
+                    FROM prepared
+                )
+                UPDATE pendency_types AS pt
+                SET "Acronym" = CASE
+                    WHEN r.acronym_order = 1 THEN r.base_acronym
+                    ELSE LEFT(r.base_acronym, 11) || '_' || SUBSTRING(REPLACE(CAST(pt."Id" AS text), '-', '') FROM 1 FOR 8)
+                END
+                FROM ranked AS r
+                WHERE pt."Id" = r."Id";
+                """);
+
             migrationBuilder.CreateTable(
                 name: "parties",
                 columns: table => new
