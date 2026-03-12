@@ -32,6 +32,11 @@ public sealed class ImoveisController : ApiControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(motivoOciosidade) && Request.Query.TryGetValue("idleReason", out var idleReasonValue))
+        {
+            motivoOciosidade = idleReasonValue.ToString();
+        }
+
         var occupancyStatus = Request.Query.TryGetValue("occupancyStatus", out var occupancyValue)
             ? occupancyValue.ToString()
             : null;

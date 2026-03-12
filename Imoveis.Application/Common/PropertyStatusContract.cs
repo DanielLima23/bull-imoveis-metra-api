@@ -120,11 +120,17 @@ public static class PropertyStatusContract
         return normalized switch
         {
             "disponivel" => Disponivel,
+            "available" => Disponivel,
             "alugado" => Alugado,
+            "leased" => Alugado,
             "inativo" => Inativo,
+            "inactive" => Inativo,
             "a venda" => A_Venda,
+            "for sale" => A_Venda,
             "demandas" => Demandas,
+            "demands" => Demandas,
             "ocioso" => Ocioso,
+            "idle" => Ocioso,
             _ => throw new AppException("Invalid property status.", 400, "validation_error")
         };
     }
@@ -170,8 +176,11 @@ public static class PropertyStatusContract
         return NormalizeKey(value) switch
         {
             "reforma" => Reforma,
+            "renovation" => Reforma,
             "rescisao" => Rescisao,
+            "termination" => Rescisao,
             "pendencia juridica" => PendenciaJuridica,
+            "legal pending" => PendenciaJuridica,
             _ => null
         };
     }

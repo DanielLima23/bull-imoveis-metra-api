@@ -211,7 +211,7 @@ public sealed class PropertyService : IPropertyService
             Observation = NormalizeNullable(request.Administration.Observation)
         };
 
-        PropertyStatusContract.Apply(entity, request.Identity.Status, request.Identity.MotivoOciosidade);
+        PropertyStatusContract.Apply(entity, request.Identity.Status, request.Identity.ResolveMotivoOciosidade());
 
         _dbContext.Properties.Add(entity);
 
@@ -247,7 +247,7 @@ public sealed class PropertyService : IPropertyService
         entity.State = request.Identity.State.Trim().ToUpperInvariant();
         entity.ZipCode = request.Identity.ZipCode.Trim();
         entity.PropertyType = request.Identity.PropertyType.Trim();
-        PropertyStatusContract.Apply(entity, request.Identity.Status, request.Identity.MotivoOciosidade);
+        PropertyStatusContract.Apply(entity, request.Identity.Status, request.Identity.ResolveMotivoOciosidade());
         entity.Registration = NormalizeNullable(request.Documentation.Registration);
         entity.Scripture = NormalizeNullable(request.Documentation.Scripture);
         entity.RegistrationCertification = NormalizeNullable(request.Documentation.RegistrationCertification);
@@ -281,7 +281,7 @@ public sealed class PropertyService : IPropertyService
             return null;
         }
 
-        PropertyStatusContract.Apply(entity, request.Status, request.MotivoOciosidade);
+        PropertyStatusContract.Apply(entity, request.Status, request.ResolveMotivoOciosidade());
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

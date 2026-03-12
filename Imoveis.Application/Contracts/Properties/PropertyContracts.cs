@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Imoveis.Application.Contracts.Properties;
 
 public sealed record PropertyQueryRequest(
@@ -19,7 +22,14 @@ public sealed record PropertyIdentitySectionRequest(
     string ZipCode,
     string PropertyType,
     string Status,
-    string? MotivoOciosidade);
+    string? MotivoOciosidade)
+{
+    [JsonExtensionData]
+    public IDictionary<string, JsonElement>? AdditionalData { get; init; }
+
+    public string? ResolveMotivoOciosidade()
+        => PropertyContractAliasResolver.ResolveAlias(MotivoOciosidade, AdditionalData);
+}
 
 public sealed record PropertyDocumentationSectionRequest(
     string? Registration,
@@ -57,7 +67,14 @@ public sealed record PropertyUpdateRequest(
     PropertyCharacteristicsSectionRequest Characteristics,
     PropertyAdministrationSectionRequest Administration);
 
-public sealed record PropertyStatusUpdateRequest(string Status, string? MotivoOciosidade);
+public sealed record PropertyStatusUpdateRequest(string Status, string? MotivoOciosidade)
+{
+    [JsonExtensionData]
+    public IDictionary<string, JsonElement>? AdditionalData { get; init; }
+
+    public string? ResolveMotivoOciosidade()
+        => PropertyContractAliasResolver.ResolveAlias(MotivoOciosidade, AdditionalData);
+}
 
 public sealed record PropertyRentReferenceCreateRequest(decimal Amount, DateOnly EffectiveFrom);
 
@@ -201,3 +218,26 @@ public sealed record PropertyMonthlyStatementDto(
     int Year,
     int? Month,
     IReadOnlyList<PropertyMonthlyStatementLineDto> Lines);
+
+internal static class PropertyContractAliasResolver
+{
+    public static string? ResolveAlias(string? primaryValue, IDictionary<string, JsonElement>? additionalData)
+    {
+        if (!string.IsNullOrWhiteSpace(primaryValue))
+        {
+            return primaryValue;
+        }
+
+        if (additionalData is null || !additionalData.TryGetValue("idleReason", out var aliasValue))
+        {
+            return primaryValue;
+        }
+
+        return aliasValue.ValueKind switch
+        {
+            JsonValueKind.Null => null,
+            JsonValueKind.String => aliasValue.GetString(),
+            _ => primaryValue
+        };
+    }
+}
