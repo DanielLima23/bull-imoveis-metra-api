@@ -4,6 +4,7 @@ using Imoveis.Infrastructure.Options;
 using Imoveis.Infrastructure.Persistence;
 using Imoveis.Infrastructure.Security;
 using Imoveis.Infrastructure.Services;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IPropertyService, PropertyService>();
+        services.AddScoped<IPartyService, PartyService>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<ILeaseService, LeaseService>();
         services.AddScoped<IExpenseService, ExpenseService>();
@@ -45,10 +47,44 @@ public static class DependencyInjection
 
     private static string ResolveConnectionString(IConfiguration configuration)
     {
-        var databaseUrl = configuration["DATABASE_URL"];
+        var databaseUrl = GetFirstConfiguredValue(
+            configuration,
+            "DATABASE_URL",
+            "POSTGRES_URL",
+            "POSTGRESQL_URL",
+            "DATABASE_CONNECTION_STRING",
+            "POSTGRES_CONNECTION_STRING");
+
         if (!string.IsNullOrWhiteSpace(databaseUrl))
         {
             return NormalizeConnectionString(ConvertDatabaseUrlToConnectionString(databaseUrl));
+        }
+
+        var postgresHost = GetFirstConfiguredValue(configuration, "POSTGRES_HOST", "DB_HOST");
+        if (!string.IsNullOrWhiteSpace(postgresHost))
+        {
+            var username = GetFirstConfiguredValue(configuration, "POSTGRES_USER", "DB_USER") ?? "postgres";
+            var password = GetFirstConfiguredValue(configuration, "POSTGRES_PASSWORD", "DB_PASSWORD") ?? string.Empty;
+            var database = GetFirstConfiguredValue(configuration, "POSTGRES_DB", "DB_NAME") ?? "postgres";
+            var portRaw = GetFirstConfiguredValue(configuration, "POSTGRES_PORT", "DB_PORT");
+            var port = 5432;
+
+            if (!string.IsNullOrWhiteSpace(portRaw)
+                && int.TryParse(portRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedPort))
+            {
+                port = parsedPort;
+            }
+
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = postgresHost,
+                Port = port,
+                Username = username,
+                Password = password,
+                Database = database
+            };
+
+            return builder.ConnectionString;
         }
 
         var explicitConnectionString = configuration.GetConnectionString("Default");
@@ -57,7 +93,8 @@ public static class DependencyInjection
             return NormalizeConnectionString(explicitConnectionString);
         }
 
-        throw new InvalidOperationException("ConnectionStrings:Default or DATABASE_URL must be configured.");
+        throw new InvalidOperationException(
+            "Database connection not configured. Provide one of: DATABASE_URL/POSTGRES_URL or ConnectionStrings:Default.");
     }
 
     private static string ConvertDatabaseUrlToConnectionString(string databaseUrl)
@@ -93,6 +130,33 @@ public static class DependencyInjection
             Database = database
         };
 
+        if (!string.IsNullOrWhiteSpace(uri.Query))
+        {
+            var queryItems = uri.Query.TrimStart('?')
+                .Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var item in queryItems)
+            {
+                var parts = item.Split('=', 2);
+                var key = Uri.UnescapeDataString(parts[0]);
+                var value = parts.Length > 1 ? Uri.UnescapeDataString(parts[1]) : string.Empty;
+
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    builder[key] = value;
+                }
+                catch (ArgumentException)
+                {
+                    // Ignore unsupported query parameter keys.
+                }
+            }
+        }
+
         return builder.ConnectionString;
     }
 
@@ -106,5 +170,19 @@ public static class DependencyInjection
         }
 
         return builder.ConnectionString;
+    }
+
+    private static string? GetFirstConfiguredValue(IConfiguration configuration, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            var value = configuration[key];
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 }

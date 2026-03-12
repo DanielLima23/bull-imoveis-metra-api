@@ -8,6 +8,8 @@ RUN dotnet publish Imoveis.Api/Imoveis.Api.csproj -c Release -o /app/publish /p:
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
