@@ -1,4 +1,4 @@
-﻿using Imoveis.Application.Common;
+using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Expenses;
 
 namespace Imoveis.Application.Abstractions.Services;

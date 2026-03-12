@@ -1,10 +1,10 @@
-﻿namespace Imoveis.Application.Contracts.Pendencies;
+namespace Imoveis.Application.Contracts.Pendencies;
 
-public sealed record PendencyTypeCreateRequest(string Name, int DefaultSlaDays);
+public sealed record PendencyTypeCreateRequest(string Code, string Name, string? Description, int DefaultSlaDays);
 
-public sealed record PendencyTypeUpdateRequest(string Name, int DefaultSlaDays);
+public sealed record PendencyTypeUpdateRequest(string Code, string Name, string? Description, int DefaultSlaDays);
 
-public sealed record PendencyTypeDto(Guid Id, string Name, int DefaultSlaDays);
+public sealed record PendencyTypeDto(Guid Id, string Code, string Name, string? Description, int DefaultSlaDays);
 
 public sealed record PendencyQueryRequest(Guid? PropertyId, string? Status, int Page = 1, int PageSize = 20);
 
@@ -19,7 +19,9 @@ public sealed record PendencyDto(
     Guid PropertyId,
     Guid PendencyTypeId,
     string PropertyTitle,
+    string PendencyTypeCode,
     string PendencyTypeName,
+    string? PendencyTypeDescription,
     string Title,
     string? Description,
     DateTime OpenedAtUtc,

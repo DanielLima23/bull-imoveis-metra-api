@@ -1,4 +1,4 @@
-﻿using Imoveis.Application.Abstractions.Services;
+using Imoveis.Application.Abstractions.Services;
 using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Pendencies;
 using Imoveis.Domain.Entities;
@@ -21,59 +21,61 @@ public sealed class PendencyService : IPendencyService
     {
         return await _dbContext.PendencyTypes
             .AsNoTracking()
-            .OrderBy(x => x.Name)
-            .Select(x => new PendencyTypeDto(x.Id, x.Name, x.DefaultSlaDays))
+            .OrderBy(x => x.Code)
+            .ThenBy(x => x.Name)
+            .Select(x => new PendencyTypeDto(x.Id, x.Code, x.Name, x.Description, x.DefaultSlaDays))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<PendencyTypeDto> CreateTypeAsync(PendencyTypeCreateRequest request, CancellationToken cancellationToken)
     {
-        if (request.DefaultSlaDays <= 0)
-        {
-            throw new AppException("DefaultSlaDays must be greater than zero.", 400, "validation_error");
-        }
+        ValidateType(request.Code, request.DefaultSlaDays);
 
-        if (await _dbContext.PendencyTypes.AnyAsync(x => x.Name == request.Name, cancellationToken))
+        if (await _dbContext.PendencyTypes.AnyAsync(x => x.Code == request.Code || x.Name == request.Name, cancellationToken))
         {
             throw new AppException("Pendency type already exists.", 409, "conflict_error");
         }
 
         var entity = new PendencyType
         {
+            Code = request.Code.Trim().ToUpperInvariant(),
             Name = request.Name.Trim(),
+            Description = NormalizeNullable(request.Description),
             DefaultSlaDays = request.DefaultSlaDays
         };
 
         _dbContext.PendencyTypes.Add(entity);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new PendencyTypeDto(entity.Id, entity.Name, entity.DefaultSlaDays);
+        return new PendencyTypeDto(entity.Id, entity.Code, entity.Name, entity.Description, entity.DefaultSlaDays);
     }
 
     public async Task<PendencyTypeDto?> UpdateTypeAsync(Guid id, PendencyTypeUpdateRequest request, CancellationToken cancellationToken)
     {
+        ValidateType(request.Code, request.DefaultSlaDays);
+
         var entity = await _dbContext.PendencyTypes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         if (entity is null)
         {
             return null;
         }
 
-        if (request.DefaultSlaDays <= 0)
-        {
-            throw new AppException("DefaultSlaDays must be greater than zero.", 400, "validation_error");
-        }
+        var code = request.Code.Trim().ToUpperInvariant();
+        var name = request.Name.Trim();
 
-        if (await _dbContext.PendencyTypes.AnyAsync(x => x.Id != id && x.Name == request.Name, cancellationToken))
+        if (await _dbContext.PendencyTypes.AnyAsync(x => x.Id != id && (x.Code == code || x.Name == name), cancellationToken))
         {
             throw new AppException("Pendency type already exists.", 409, "conflict_error");
         }
 
-        entity.Name = request.Name.Trim();
+        entity.Code = code;
+        entity.Name = name;
+        entity.Description = NormalizeNullable(request.Description);
         entity.DefaultSlaDays = request.DefaultSlaDays;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new PendencyTypeDto(entity.Id, entity.Name, entity.DefaultSlaDays);
+        return new PendencyTypeDto(entity.Id, entity.Code, entity.Name, entity.Description, entity.DefaultSlaDays);
     }
 
     public async Task<PagedResult<PendencyDto>> QueryAsync(PendencyQueryRequest request, CancellationToken cancellationToken)
@@ -136,7 +138,7 @@ public sealed class PendencyService : IPendencyService
             PropertyId = property.Id,
             PendencyTypeId = pendencyType.Id,
             Title = request.Title.Trim(),
-            Description = request.Description?.Trim(),
+            Description = NormalizeNullable(request.Description),
             DueAtUtc = request.DueAtUtc,
             OpenedAtUtc = DateTime.UtcNow,
             Status = PendencyStatus.OPEN
@@ -164,7 +166,7 @@ public sealed class PendencyService : IPendencyService
         }
 
         entity.Title = request.Title.Trim();
-        entity.Description = request.Description?.Trim();
+        entity.Description = NormalizeNullable(request.Description);
         entity.DueAtUtc = request.DueAtUtc;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -211,7 +213,9 @@ public sealed class PendencyService : IPendencyService
             entity.PropertyId,
             entity.PendencyTypeId,
             entity.Property.Title,
+            entity.PendencyType.Code,
             entity.PendencyType.Name,
+            entity.PendencyType.Description,
             entity.Title,
             entity.Description,
             entity.OpenedAtUtc,
@@ -222,5 +226,23 @@ public sealed class PendencyService : IPendencyService
             slaDays,
             elapsedDays,
             entity.CreatedAtUtc);
+    }
+
+    private static void ValidateType(string code, int defaultSlaDays)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            throw new AppException("Code is required.", 400, "validation_error");
+        }
+
+        if (defaultSlaDays <= 0)
+        {
+            throw new AppException("DefaultSlaDays must be greater than zero.", 400, "validation_error");
+        }
+    }
+
+    private static string? NormalizeNullable(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 }

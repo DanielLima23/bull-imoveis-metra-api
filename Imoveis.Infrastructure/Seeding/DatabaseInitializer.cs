@@ -77,9 +77,11 @@ public static class DatabaseInitializer
         dbContext.ExpenseTypes.AddRange(
             new ExpenseType { Name = "Agua", Category = "UTILITIES", IsFixedCost = true },
             new ExpenseType { Name = "Luz", Category = "UTILITIES", IsFixedCost = true },
+            new ExpenseType { Name = "Gas", Category = "UTILITIES", IsFixedCost = true },
             new ExpenseType { Name = "Condominio", Category = "CONDOMINIUM", IsFixedCost = true },
             new ExpenseType { Name = "IPTU", Category = "TAX", IsFixedCost = true },
-            new ExpenseType { Name = "Reforma", Category = "MAINTENANCE", IsFixedCost = false }
+            new ExpenseType { Name = "Reforma", Category = "MAINTENANCE", IsFixedCost = false },
+            new ExpenseType { Name = "Extra", Category = "MISC", IsFixedCost = false }
         );
 
         await dbContext.SaveChangesAsync();
@@ -93,10 +95,10 @@ public static class DatabaseInitializer
         }
 
         dbContext.PendencyTypes.AddRange(
-            new PendencyType { Name = "Documento", DefaultSlaDays = 7 },
-            new PendencyType { Name = "Informacao Essencial", DefaultSlaDays = 3 },
-            new PendencyType { Name = "Conta Atrasada", DefaultSlaDays = 2 },
-            new PendencyType { Name = "Vistoria", DefaultSlaDays = 5 }
+            new PendencyType { Code = "DOC", Name = "Documento", Description = "Documento pendente", DefaultSlaDays = 7 },
+            new PendencyType { Code = "INFO", Name = "Informacao Essencial", Description = "Informacao essencial ausente", DefaultSlaDays = 3 },
+            new PendencyType { Code = "FIN", Name = "Conta Atrasada", Description = "Conta financeira vencida", DefaultSlaDays = 2 },
+            new PendencyType { Code = "VIST", Name = "Vistoria", Description = "Pendencia de vistoria", DefaultSlaDays = 5 }
         );
 
         await dbContext.SaveChangesAsync();

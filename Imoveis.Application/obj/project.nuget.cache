@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "RikwBQciDVk=",
+  "success": true,
+  "projectFilePath": "C:\\Projetos\\bull-imoveis-metra-api\\Imoveis.Application\\Imoveis.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Daniel Lima\\.nuget\\packages\\fluentvalidation\\11.9.2\\fluentvalidation.11.9.2.nupkg.sha512",
+    "C:\\Users\\Daniel Lima\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.1\\microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

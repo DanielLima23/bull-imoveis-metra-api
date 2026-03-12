@@ -1,4 +1,4 @@
-﻿using Imoveis.Application.Abstractions.Services;
+using Imoveis.Application.Abstractions.Services;
 using Imoveis.Application.Contracts.Dashboard;
 using Imoveis.Domain.Entities;
 using Imoveis.Domain.Enums;
@@ -27,29 +27,22 @@ public sealed class DashboardService : IDashboardService
         var monthEnd = monthStart.AddMonths(1).AddDays(-1);
         var monthStartUtc = monthStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         var monthEndUtc = monthEnd.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
 
-        var installmentQuery = _dbContext.ExpenseInstallments
+        var expenseInstallments = await _dbContext.ExpenseInstallments
             .AsNoTracking()
             .Include(x => x.PropertyExpense)
                 .ThenInclude(x => x.Property)
             .Include(x => x.PropertyExpense)
                 .ThenInclude(x => x.ExpenseType)
-            .AsQueryable();
-
-        var expectedInstallments = await installmentQuery
-            .Where(x => x.DueDate >= monthStart && x.DueDate <= monthEnd)
             .ToListAsync(cancellationToken);
 
-        var receivedInstallments = await installmentQuery
-            .Where(x => x.PaidAtUtc.HasValue && x.PaidAtUtc >= monthStartUtc && x.PaidAtUtc <= monthEndUtc)
-            .ToListAsync(cancellationToken);
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        var overdueInstallments = await installmentQuery
-            .Where(x => x.DueDate < today && x.Status != ExpenseStatus.PAID)
-            .OrderBy(x => x.DueDate)
-            .ThenByDescending(x => x.Amount)
-            .Take(10)
+        var receivables = await _dbContext.LeaseReceivableInstallments
+            .AsNoTracking()
+            .Include(x => x.LeaseContract)
+                .ThenInclude(x => x.Property)
+            .Include(x => x.LeaseContract)
+                .ThenInclude(x => x.Tenant)
             .ToListAsync(cancellationToken);
 
         var properties = await _dbContext.Properties
@@ -67,26 +60,37 @@ public sealed class DashboardService : IDashboardService
             .Take(15)
             .ToListAsync(cancellationToken);
 
-        var receivedAmount = receivedInstallments.Sum(x => x.PaidAmount ?? x.Amount);
-        var expectedAmount = expectedInstallments.Sum(x => x.Amount);
-        var pendingAmount = expectedInstallments
-            .Where(x => x.Status != ExpenseStatus.PAID)
-            .Sum(x => x.Amount);
-        var overdueAmount = overdueInstallments.Sum(x => x.Amount);
+        var expectedRents = receivables.Where(x => x.CompetenceDate >= monthStart && x.CompetenceDate <= monthEnd).ToList();
+        var receivedRents = receivables.Where(x => x.PaidAtUtc.HasValue && x.PaidAtUtc >= monthStartUtc && x.PaidAtUtc <= monthEndUtc).ToList();
+        var paidExpenses = expenseInstallments.Where(x => x.PaidAtUtc.HasValue && x.PaidAtUtc >= monthStartUtc && x.PaidAtUtc <= monthEndUtc).ToList();
+        var monthExpenses = expenseInstallments.Where(x => x.DueDate >= monthStart && x.DueDate <= monthEnd).ToList();
+
+        var overdueReceivables = receivables
+            .Where(x => x.DueDate < today && x.Status != ReceivableStatus.RECEIVED && x.Status != ReceivableStatus.CANCELED)
+            .OrderBy(x => x.DueDate)
+            .Take(10)
+            .ToList();
+
+        var overdueExpenses = expenseInstallments
+            .Where(x => x.DueDate < today && x.Status != ExpenseStatus.PAID && x.Status != ExpenseStatus.CANCELED)
+            .OrderBy(x => x.DueDate)
+            .Take(10)
+            .ToList();
+
+        var receivedRentAmount = receivedRents.Sum(x => x.PaidAmount ?? x.ExpectedAmount);
+        var expectedRentAmount = expectedRents.Sum(x => x.ExpectedAmount);
+        var paidExpensesAmount = paidExpenses.Sum(x => x.PaidAmount ?? x.Amount);
+        var pendingExpensesAmount = monthExpenses.Where(x => x.Status != ExpenseStatus.PAID).Sum(x => x.Amount);
+        var overdueReceivableAmount = overdueReceivables.Sum(x => x.ExpectedAmount);
+        var overdueExpenseAmount = overdueExpenses.Sum(x => x.Amount);
 
         var vacancyLoss = 0m;
         var vacantCount = 0;
         var daysInMonth = monthEnd.Day;
 
-        foreach (var property in properties)
+        foreach (var property in properties.Where(x => x.OccupancyStatus == PropertyOccupancyStatus.VACANT))
         {
-            if (property.Status == PropertyStatus.LEASED)
-            {
-                continue;
-            }
-
             var baseRent = ResolveBaseRent(property, monthEnd);
-
             if (!baseRent.HasValue)
             {
                 continue;
@@ -104,18 +108,21 @@ public sealed class DashboardService : IDashboardService
 
         var overview = new DashboardOverviewDto(
             $"{year:D4}-{month:D2}",
-            Math.Round(receivedAmount, 2),
-            Math.Round(expectedAmount, 2),
-            Math.Round(pendingAmount, 2),
-            Math.Round(overdueAmount, 2),
+            Math.Round(receivedRentAmount, 2),
+            Math.Round(expectedRentAmount, 2),
+            Math.Round(paidExpensesAmount, 2),
+            Math.Round(pendingExpensesAmount, 2),
+            Math.Round(overdueReceivableAmount, 2),
+            Math.Round(overdueExpenseAmount, 2),
             vacantCount,
             Math.Round(vacancyLoss, 2),
             properties.Count,
-            properties.Count(x => x.Status == PropertyStatus.LEASED),
-            properties.Count(x => x.Status == PropertyStatus.AVAILABLE),
-            properties.Count(x => x.Status == PropertyStatus.PREPARATION));
+            properties.Count(x => x.OccupancyStatus == PropertyOccupancyStatus.OCCUPIED),
+            properties.Count(x => x.OccupancyStatus == PropertyOccupancyStatus.VACANT),
+            properties.Count(x => x.AssetState == PropertyAssetState.PREPARATION),
+            properties.Count(x => x.AssetState == PropertyAssetState.RENOVATION));
 
-        var overdueDtos = overdueInstallments.Select(x => new DashboardOverdueExpenseDto(
+        var overdueExpenseDtos = overdueExpenses.Select(x => new DashboardOverdueExpenseDto(
             x.PropertyExpenseId,
             x.PropertyExpense.Property.Title,
             x.PropertyExpense.ExpenseType.Name,
@@ -125,9 +132,19 @@ public sealed class DashboardService : IDashboardService
             Math.Max(0, (today.ToDateTime(TimeOnly.MinValue) - x.DueDate.ToDateTime(TimeOnly.MinValue)).Days)
         )).ToList();
 
+        var overdueReceivableDtos = overdueReceivables.Select(x => new DashboardOverdueReceivableDto(
+            x.LeaseContractId,
+            x.LeaseContract.Property.Title,
+            x.LeaseContract.Tenant.Name,
+            x.CompetenceDate,
+            x.DueDate,
+            x.ExpectedAmount,
+            Math.Max(0, (today.ToDateTime(TimeOnly.MinValue) - x.DueDate.ToDateTime(TimeOnly.MinValue)).Days)
+        )).ToList();
+
         var alertDtos = openPendencies.Select(ToPendencyAlert).ToList();
 
-        return new RealEstateDashboardDto(overview, overdueDtos, alertDtos);
+        return new RealEstateDashboardDto(overview, overdueExpenseDtos, overdueReceivableDtos, alertDtos);
     }
 
     private static int OccupiedDaysInMonth(IEnumerable<LeaseContract> leases, DateOnly monthStart, DateOnly monthEnd)
@@ -197,6 +214,7 @@ public sealed class DashboardService : IDashboardService
         return new DashboardPendencyAlertDto(
             entity.Id,
             entity.Property.Title,
+            entity.PendencyType.Code,
             entity.PendencyType.Name,
             entity.Title,
             entity.DueAtUtc,

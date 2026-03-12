@@ -1,4 +1,4 @@
-﻿namespace Imoveis.Application.Contracts.Expenses;
+namespace Imoveis.Application.Contracts.Expenses;
 
 public sealed record ExpenseTypeCreateRequest(string Name, string Category, bool IsFixedCost);
 
@@ -31,7 +31,7 @@ public sealed record ExpenseUpdateRequest(
     string Status,
     string? Notes);
 
-public sealed record ExpenseMarkPaidRequest(decimal? PaidAmount, DateTime? PaidAtUtc);
+public sealed record ExpenseMarkPaidRequest(decimal? PaidAmount, DateTime? PaidAtUtc, string? PaidBy, string? Notes);
 
 public sealed record ExpenseInstallmentDto(
     Guid Id,
@@ -40,7 +40,9 @@ public sealed record ExpenseInstallmentDto(
     decimal Amount,
     string Status,
     DateTime? PaidAtUtc,
-    decimal? PaidAmount);
+    decimal? PaidAmount,
+    string? PaidBy,
+    string? Notes);
 
 public sealed record ExpenseDto(
     Guid Id,

@@ -1,5 +1,4 @@
 using Imoveis.Domain.Entities;
-using Imoveis.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Imoveis.Infrastructure.Persistence;
@@ -17,8 +16,12 @@ public sealed class AppDbContext : DbContext
 
     public DbSet<Property> Properties => Set<Property>();
     public DbSet<PropertyRentReference> PropertyRentReferences => Set<PropertyRentReference>();
+    public DbSet<PropertyChargeTemplate> PropertyChargeTemplates => Set<PropertyChargeTemplate>();
+    public DbSet<PropertyHistoryEntry> PropertyHistoryEntries => Set<PropertyHistoryEntry>();
+    public DbSet<PropertyAttachment> PropertyAttachments => Set<PropertyAttachment>();
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<LeaseContract> LeaseContracts => Set<LeaseContract>();
+    public DbSet<LeaseReceivableInstallment> LeaseReceivableInstallments => Set<LeaseReceivableInstallment>();
 
     public DbSet<ExpenseType> ExpenseTypes => Set<ExpenseType>();
     public DbSet<PropertyExpense> PropertyExpenses => Set<PropertyExpense>();
@@ -71,8 +74,19 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.State).HasMaxLength(2).IsRequired();
             entity.Property(x => x.ZipCode).HasMaxLength(12).IsRequired();
             entity.Property(x => x.PropertyType).HasMaxLength(60).IsRequired();
-            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
-            entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.Property(x => x.OccupancyStatus).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.AssetState).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Registration).HasMaxLength(120);
+            entity.Property(x => x.Scripture).HasMaxLength(120);
+            entity.Property(x => x.RegistrationCertification).HasMaxLength(180);
+            entity.Property(x => x.Proprietary).HasMaxLength(180);
+            entity.Property(x => x.Administrator).HasMaxLength(180);
+            entity.Property(x => x.AdministratorPhone).HasMaxLength(40);
+            entity.Property(x => x.AdministratorEmail).HasMaxLength(180);
+            entity.Property(x => x.AdministrateTax).HasMaxLength(80);
+            entity.Property(x => x.Lawyer).HasMaxLength(160);
+            entity.Property(x => x.LawyerData).HasMaxLength(500);
+            entity.Property(x => x.Observation).HasMaxLength(4000);
         });
 
         modelBuilder.Entity<PropertyRentReference>(entity =>
@@ -84,6 +98,48 @@ public sealed class AppDbContext : DbContext
             entity.HasIndex(x => new { x.PropertyId, x.EffectiveFrom });
             entity.HasOne(x => x.Property)
                 .WithMany(x => x.RentReferences)
+                .HasForeignKey(x => x.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PropertyChargeTemplate>(entity =>
+        {
+            entity.ToTable("property_charge_templates");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Kind).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.DefaultAmount).HasPrecision(18, 2).IsRequired();
+            entity.Property(x => x.DefaultResponsibility).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ProviderInformation).HasMaxLength(500);
+            entity.Property(x => x.Notes).HasMaxLength(1000);
+            entity.HasOne(x => x.Property)
+                .WithMany(x => x.ChargeTemplates)
+                .HasForeignKey(x => x.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PropertyHistoryEntry>(entity =>
+        {
+            entity.ToTable("property_history_entries");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Content).HasMaxLength(4000).IsRequired();
+            entity.Property(x => x.OccurredAtUtc).IsRequired();
+            entity.HasOne(x => x.Property)
+                .WithMany(x => x.HistoryEntries)
+                .HasForeignKey(x => x.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PropertyAttachment>(entity =>
+        {
+            entity.ToTable("property_attachments");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Category).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(180).IsRequired();
+            entity.Property(x => x.ResourceLocation).HasMaxLength(2048).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(1000);
+            entity.HasOne(x => x.Property)
+                .WithMany(x => x.Attachments)
                 .HasForeignKey(x => x.PropertyId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -108,6 +164,17 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.EndDate);
             entity.Property(x => x.MonthlyRent).HasPrecision(18, 2).IsRequired();
             entity.Property(x => x.DepositAmount).HasPrecision(18, 2);
+            entity.Property(x => x.ContractWith).HasMaxLength(180);
+            entity.Property(x => x.PaymentLocation).HasMaxLength(180);
+            entity.Property(x => x.ReadjustmentIndex).HasMaxLength(50);
+            entity.Property(x => x.ContractRegistration).HasMaxLength(180);
+            entity.Property(x => x.Insurance).HasMaxLength(180);
+            entity.Property(x => x.SignatureRecognition).HasMaxLength(180);
+            entity.Property(x => x.OptionalContactName).HasMaxLength(180);
+            entity.Property(x => x.OptionalContactPhone).HasMaxLength(40);
+            entity.Property(x => x.GuarantorName).HasMaxLength(180);
+            entity.Property(x => x.GuarantorDocument).HasMaxLength(80);
+            entity.Property(x => x.GuarantorPhone).HasMaxLength(40);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
 
@@ -120,6 +187,22 @@ public sealed class AppDbContext : DbContext
                 .WithMany(x => x.Leases)
                 .HasForeignKey(x => x.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<LeaseReceivableInstallment>(entity =>
+        {
+            entity.ToTable("lease_receivable_installments");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ExpectedAmount).HasPrecision(18, 2).IsRequired();
+            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.PaidAmount).HasPrecision(18, 2);
+            entity.Property(x => x.PaidBy).HasMaxLength(120);
+            entity.Property(x => x.Notes).HasMaxLength(1000);
+            entity.HasIndex(x => new { x.LeaseContractId, x.CompetenceDate }).IsUnique();
+            entity.HasOne(x => x.LeaseContract)
+                .WithMany(x => x.ReceivableInstallments)
+                .HasForeignKey(x => x.LeaseContractId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<ExpenseType>(entity =>
@@ -161,6 +244,8 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.Amount).HasPrecision(18, 2).IsRequired();
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
             entity.Property(x => x.PaidAmount).HasPrecision(18, 2);
+            entity.Property(x => x.PaidBy).HasMaxLength(120);
+            entity.Property(x => x.Notes).HasMaxLength(1000);
             entity.HasOne(x => x.PropertyExpense)
                 .WithMany(x => x.Installments)
                 .HasForeignKey(x => x.PropertyExpenseId)
@@ -172,8 +257,11 @@ public sealed class AppDbContext : DbContext
         {
             entity.ToTable("pendency_types");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.Code).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(500);
             entity.Property(x => x.DefaultSlaDays).IsRequired();
+            entity.HasIndex(x => x.Code).IsUnique();
             entity.HasIndex(x => x.Name).IsUnique();
         });
 

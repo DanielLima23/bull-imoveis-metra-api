@@ -1,4 +1,4 @@
-﻿using Imoveis.Application.Abstractions.Services;
+using Imoveis.Application.Abstractions.Services;
 using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Expenses;
 using Imoveis.Domain.Entities;
@@ -143,7 +143,7 @@ public sealed class ExpenseService : IExpenseService
             InstallmentsCount = installmentsCount,
             IsRecurring = request.IsRecurring,
             YearlyMonth = request.YearlyMonth,
-            Notes = request.Notes?.Trim(),
+            Notes = NormalizeNullable(request.Notes),
             Status = ExpenseStatus.OPEN
         };
 
@@ -188,12 +188,22 @@ public sealed class ExpenseService : IExpenseService
         entity.IsRecurring = request.IsRecurring;
         entity.YearlyMonth = request.YearlyMonth;
         entity.Status = status;
-        entity.Notes = request.Notes?.Trim();
+        entity.Notes = NormalizeNullable(request.Notes);
 
         if (shouldRebuildInstallments)
         {
-            _dbContext.ExpenseInstallments.RemoveRange(entity.Installments);
-            entity.Installments = GenerateInstallments(entity);
+            _dbContext.ExpenseInstallments.RemoveRange(entity.Installments.Where(x => x.Status != ExpenseStatus.PAID));
+            entity.Installments = entity.Installments.Where(x => x.Status == ExpenseStatus.PAID).ToList();
+
+            foreach (var installment in GenerateInstallments(entity))
+            {
+                if (entity.Installments.Any(x => x.InstallmentNumber == installment.InstallmentNumber))
+                {
+                    continue;
+                }
+
+                entity.Installments.Add(installment);
+            }
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -227,6 +237,8 @@ public sealed class ExpenseService : IExpenseService
         installment.Status = ExpenseStatus.PAID;
         installment.PaidAtUtc = request.PaidAtUtc ?? DateTime.UtcNow;
         installment.PaidAmount = request.PaidAmount ?? installment.Amount;
+        installment.PaidBy = NormalizeNullable(request.PaidBy);
+        installment.Notes = NormalizeNullable(request.Notes);
 
         if (entity.Installments.All(x => x.Status == ExpenseStatus.PAID))
         {
@@ -261,6 +273,7 @@ public sealed class ExpenseService : IExpenseService
         var installmentCount = expense.InstallmentsCount <= 0 ? 1 : expense.InstallmentsCount;
         var baseAmount = Math.Round(expense.TotalAmount / installmentCount, 2, MidpointRounding.AwayFromZero);
         var totalAccumulated = 0m;
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
 
         for (var i = 1; i <= installmentCount; i++)
         {
@@ -269,13 +282,14 @@ public sealed class ExpenseService : IExpenseService
                 : baseAmount;
 
             totalAccumulated += amount;
+            var dueDate = expense.DueDate.AddMonths(i - 1);
 
             installments.Add(new ExpenseInstallment
             {
                 InstallmentNumber = i,
-                DueDate = expense.DueDate.AddMonths(i - 1),
+                DueDate = dueDate,
                 Amount = amount,
-                Status = ExpenseStatus.OPEN
+                Status = dueDate < today ? ExpenseStatus.OVERDUE : ExpenseStatus.OPEN
             });
         }
 
@@ -293,7 +307,9 @@ public sealed class ExpenseService : IExpenseService
                 x.Amount,
                 x.Status.ToString(),
                 x.PaidAtUtc,
-                x.PaidAmount))
+                x.PaidAmount,
+                x.PaidBy,
+                x.Notes))
             .ToList();
 
         return new ExpenseDto(
@@ -313,5 +329,10 @@ public sealed class ExpenseService : IExpenseService
             entity.Notes,
             installments,
             entity.CreatedAtUtc);
+    }
+
+    private static string? NormalizeNullable(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 }

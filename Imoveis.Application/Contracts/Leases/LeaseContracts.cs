@@ -1,4 +1,4 @@
-﻿namespace Imoveis.Application.Contracts.Leases;
+namespace Imoveis.Application.Contracts.Leases;
 
 public sealed record LeaseQueryRequest(Guid? PropertyId, Guid? TenantId, string? Status, int Page = 1, int PageSize = 20);
 
@@ -9,6 +9,18 @@ public sealed record LeaseCreateRequest(
     DateOnly? EndDate,
     decimal MonthlyRent,
     decimal? DepositAmount,
+    string? ContractWith,
+    int? PaymentDay,
+    string? PaymentLocation,
+    string? ReadjustmentIndex,
+    string? ContractRegistration,
+    string? Insurance,
+    string? SignatureRecognition,
+    string? OptionalContactName,
+    string? OptionalContactPhone,
+    string? GuarantorName,
+    string? GuarantorDocument,
+    string? GuarantorPhone,
     string? Notes);
 
 public sealed record LeaseUpdateRequest(
@@ -17,6 +29,18 @@ public sealed record LeaseUpdateRequest(
     decimal MonthlyRent,
     decimal? DepositAmount,
     string Status,
+    string? ContractWith,
+    int? PaymentDay,
+    string? PaymentLocation,
+    string? ReadjustmentIndex,
+    string? ContractRegistration,
+    string? Insurance,
+    string? SignatureRecognition,
+    string? OptionalContactName,
+    string? OptionalContactPhone,
+    string? GuarantorName,
+    string? GuarantorDocument,
+    string? GuarantorPhone,
     string? Notes);
 
 public sealed record LeaseCloseRequest(DateOnly EndDate);
@@ -32,5 +56,17 @@ public sealed record LeaseDto(
     decimal MonthlyRent,
     decimal? DepositAmount,
     string Status,
+    string? ContractWith,
+    int? PaymentDay,
+    string? PaymentLocation,
+    string? ReadjustmentIndex,
+    string? ContractRegistration,
+    string? Insurance,
+    string? SignatureRecognition,
+    string? OptionalContactName,
+    string? OptionalContactPhone,
+    string? GuarantorName,
+    string? GuarantorDocument,
+    string? GuarantorPhone,
     string? Notes,
     DateTime CreatedAtUtc);

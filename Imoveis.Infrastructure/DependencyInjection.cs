@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<ISystemSettingsService, SystemSettingsService>();
+        services.AddScoped<ILegacyImportService, LegacyImportService>();
 
         return services;
     }
