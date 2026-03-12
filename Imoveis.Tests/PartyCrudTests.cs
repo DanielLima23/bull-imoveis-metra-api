@@ -55,6 +55,34 @@ public sealed class PartyCrudTests
     }
 
     [Fact]
+    public async Task QuerySupportsMultipleKindsSeparatedByComma()
+    {
+        await using var dbContext = CreateDbContext();
+        var controller = CreateController(dbContext);
+
+        _ = ExtractData(await controller.Create(
+            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null),
+            CancellationToken.None));
+        _ = ExtractData(await controller.Create(
+            new PartyCreateRequest("ADVOGADO", "Ana Silva", "12345678901", "ana@teste.com", "11999990001", null),
+            CancellationToken.None));
+        _ = ExtractData(await controller.Create(
+            new PartyCreateRequest("CORRETOR", "Mario Silva", "12345678902", "mario@teste.com", "11999990002", null),
+            CancellationToken.None));
+
+        var query = ExtractObjectData<PagedResult<PartyDto>>(await controller.Query(
+            search: "Silva",
+            kind: "PROPRIETARIO,ADVOGADO",
+            active: true,
+            page: 1,
+            pageSize: 20,
+            cancellationToken: CancellationToken.None));
+
+        Assert.Equal(2, query.Items.Count);
+        Assert.DoesNotContain(query.Items, item => item.Kind == "CORRETOR");
+    }
+
+    [Fact]
     public async Task DeleteRemovesPartyFromDatabase()
     {
         await using var dbContext = CreateDbContext();

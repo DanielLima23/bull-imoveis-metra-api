@@ -45,11 +45,14 @@ public sealed record PropertyCharacteristicsSectionRequest(
 
 public sealed record PropertyAdministrationSectionRequest(
     string? Proprietary,
+    Guid? ProprietaryPartyId,
     string? Administrator,
+    Guid? AdministratorPartyId,
     string? AdministratorPhone,
     string? AdministratorEmail,
     string? AdministrateTax,
     string? Lawyer,
+    Guid? LawyerPartyId,
     string? LawyerData,
     string? Observation);
 
@@ -94,11 +97,14 @@ public sealed record PropertyCharacteristicsSectionDto(
 
 public sealed record PropertyAdministrationSectionDto(
     string? Proprietary,
+    Guid? ProprietaryPartyId,
     string? Administrator,
+    Guid? AdministratorPartyId,
     string? AdministratorPhone,
     string? AdministratorEmail,
     string? AdministrateTax,
     string? Lawyer,
+    Guid? LawyerPartyId,
     string? LawyerData,
     string? Observation);
 
@@ -114,7 +120,10 @@ public sealed record PropertyDto(
     string Status,
     string? MotivoOciosidade,
     string? Proprietary,
+    Guid? ProprietaryPartyId,
     string? Administrator,
+    Guid? AdministratorPartyId,
+    Guid? LawyerPartyId,
     decimal? CurrentBaseRent,
     DateTime CreatedAtUtc,
     PropertyDocumentationSectionDto Documentation,

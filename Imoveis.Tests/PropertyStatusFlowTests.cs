@@ -148,7 +148,10 @@ public sealed class PropertyStatusFlowTests
             new PropertyCharacteristicsSectionRequest(2, false, false, true, null),
             new PropertyAdministrationSectionRequest(
                 "Maria",
+                null,
                 "Carlos",
+                null,
+                null,
                 null,
                 null,
                 null,

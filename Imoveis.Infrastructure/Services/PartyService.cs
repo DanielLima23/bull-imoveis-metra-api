@@ -5,6 +5,7 @@ using Imoveis.Domain.Entities;
 using Imoveis.Domain.Enums;
 using Imoveis.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Imoveis.Infrastructure.Services;
 
@@ -36,8 +37,13 @@ public sealed class PartyService : IPartyService
 
         if (!string.IsNullOrWhiteSpace(request.Kind))
         {
-            var kind = PartyKindContract.Parse(request.Kind, "kind");
-            query = query.Where(x => x.Kind == kind);
+            var kinds = request.Kind
+                .Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(kind => PartyKindContract.Parse(kind, "kind"))
+                .Distinct()
+                .ToArray();
+
+            query = query.Where(BuildKindPredicate(kinds));
         }
 
         if (request.Active.HasValue)
@@ -150,4 +156,26 @@ public sealed class PartyService : IPartyService
             entity.Notes,
             entity.IsActive,
             entity.CreatedAtUtc);
+
+    private static Expression<Func<Party, bool>> BuildKindPredicate(IReadOnlyList<PartyKind> kinds)
+    {
+        if (kinds.Count == 0)
+        {
+            return _ => true;
+        }
+
+        var parameter = Expression.Parameter(typeof(Party), "party");
+        Expression? body = null;
+
+        foreach (var kind in kinds)
+        {
+            var equals = Expression.Equal(
+                Expression.Property(parameter, nameof(Party.Kind)),
+                Expression.Constant(kind));
+
+            body = body is null ? equals : Expression.OrElse(body, equals);
+        }
+
+        return Expression.Lambda<Func<Party, bool>>(body!, parameter);
+    }
 }

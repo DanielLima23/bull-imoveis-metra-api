@@ -27,6 +27,7 @@ public sealed class PropertyService : IPropertyService
         var query = _dbContext.Properties
             .AsNoTracking()
             .Include(x => x.RentReferences)
+            .Include(x => x.PartyLinks)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -90,6 +91,7 @@ public sealed class PropertyService : IPropertyService
         var entity = await _dbContext.Properties
             .AsNoTracking()
             .Include(x => x.RentReferences)
+            .Include(x => x.PartyLinks)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity is null ? null : ToDto(entity, ResolveCurrentBaseRent(entity));
@@ -100,6 +102,7 @@ public sealed class PropertyService : IPropertyService
         var entity = await _dbContext.Properties
             .AsNoTracking()
             .Include(x => x.RentReferences)
+            .Include(x => x.PartyLinks)
             .Include(x => x.ChargeTemplates)
             .Include(x => x.HistoryEntries)
             .Include(x => x.Attachments)
@@ -181,6 +184,7 @@ public sealed class PropertyService : IPropertyService
     public async Task<PropertyDto> CreateAsync(PropertyCreateRequest request, CancellationToken cancellationToken)
     {
         ValidateInitialRent(request.InitialRentAmount, request.InitialRentEffectiveFrom);
+        var selectedParties = await LoadSelectedPartiesAsync(request.Administration, cancellationToken);
 
         var internalCode = await GenerateUniqueCodeAsync(request.Identity.Title, cancellationToken);
 
@@ -201,17 +205,14 @@ public sealed class PropertyService : IPropertyService
             Elevator = request.Characteristics.Elevator,
             Garage = request.Characteristics.Garage,
             UnoccupiedSince = request.Characteristics.UnoccupiedSince,
-            Proprietary = NormalizeNullable(request.Administration.Proprietary),
-            Administrator = NormalizeNullable(request.Administration.Administrator),
-            AdministratorPhone = NormalizeNullable(request.Administration.AdministratorPhone),
-            AdministratorEmail = NormalizeNullable(request.Administration.AdministratorEmail),
             AdministrateTax = NormalizeNullable(request.Administration.AdministrateTax),
-            Lawyer = NormalizeNullable(request.Administration.Lawyer),
             LawyerData = NormalizeNullable(request.Administration.LawyerData),
             Observation = NormalizeNullable(request.Administration.Observation)
         };
 
         PropertyStatusContract.Apply(entity, request.Identity.Status, request.Identity.ResolveMotivoOciosidade());
+        ApplyAdministrationData(entity, request.Administration, selectedParties);
+        AttachPartyLinks(entity, request.Administration);
 
         _dbContext.Properties.Add(entity);
 
@@ -232,6 +233,7 @@ public sealed class PropertyService : IPropertyService
 
     public async Task<PropertyDto?> UpdateAsync(Guid id, PropertyUpdateRequest request, CancellationToken cancellationToken)
     {
+        var selectedParties = await LoadSelectedPartiesAsync(request.Administration, cancellationToken);
         var entity = await _dbContext.Properties
             .Include(x => x.RentReferences)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -256,18 +258,15 @@ public sealed class PropertyService : IPropertyService
         entity.Elevator = request.Characteristics.Elevator;
         entity.Garage = request.Characteristics.Garage;
         entity.UnoccupiedSince = request.Characteristics.UnoccupiedSince;
-        entity.Proprietary = NormalizeNullable(request.Administration.Proprietary);
-        entity.Administrator = NormalizeNullable(request.Administration.Administrator);
-        entity.AdministratorPhone = NormalizeNullable(request.Administration.AdministratorPhone);
-        entity.AdministratorEmail = NormalizeNullable(request.Administration.AdministratorEmail);
         entity.AdministrateTax = NormalizeNullable(request.Administration.AdministrateTax);
-        entity.Lawyer = NormalizeNullable(request.Administration.Lawyer);
         entity.LawyerData = NormalizeNullable(request.Administration.LawyerData);
         entity.Observation = NormalizeNullable(request.Administration.Observation);
+        ApplyAdministrationData(entity, request.Administration, selectedParties);
+        await SyncStoredPartyLinksAsync(entity.Id, request.Administration, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return ToDto(entity, ResolveCurrentBaseRent(entity));
+        return await GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<PropertyDto?> UpdateStatusAsync(Guid id, PropertyStatusUpdateRequest request, CancellationToken cancellationToken)
@@ -566,6 +565,130 @@ public sealed class PropertyService : IPropertyService
                 .ToList());
     }
 
+    private async Task<SelectedPropertyParties> LoadSelectedPartiesAsync(PropertyAdministrationSectionRequest request, CancellationToken cancellationToken)
+    {
+        var ids = new[]
+        {
+            request.ProprietaryPartyId,
+            request.AdministratorPartyId,
+            request.LawyerPartyId
+        }
+        .Where(x => x.HasValue)
+        .Select(x => x!.Value)
+        .Distinct()
+        .ToArray();
+
+        if (ids.Length == 0)
+        {
+            return new SelectedPropertyParties(null, null, null);
+        }
+
+        var parties = await _dbContext.Parties
+            .Where(x => ids.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, cancellationToken);
+
+        return new SelectedPropertyParties(
+            ResolveSelectedParty(parties, request.ProprietaryPartyId, nameof(request.ProprietaryPartyId)),
+            ResolveSelectedParty(parties, request.AdministratorPartyId, nameof(request.AdministratorPartyId)),
+            ResolveSelectedParty(parties, request.LawyerPartyId, nameof(request.LawyerPartyId)));
+    }
+
+    private static Party? ResolveSelectedParty(IReadOnlyDictionary<Guid, Party> parties, Guid? partyId, string fieldName)
+    {
+        if (!partyId.HasValue)
+        {
+            return null;
+        }
+
+        if (!parties.TryGetValue(partyId.Value, out var party))
+        {
+            throw new AppException($"{fieldName} does not reference an existing party.", 400, "validation_error");
+        }
+
+        if (!party.IsActive)
+        {
+            throw new AppException($"{fieldName} must reference an active party.", 400, "validation_error");
+        }
+
+        return party;
+    }
+
+    private static void ApplyAdministrationData(Property entity, PropertyAdministrationSectionRequest request, SelectedPropertyParties selectedParties)
+    {
+        entity.Proprietary = selectedParties.Proprietary?.Name ?? NormalizeNullable(request.Proprietary);
+        entity.Administrator = selectedParties.Administrator?.Name ?? NormalizeNullable(request.Administrator);
+        entity.AdministratorPhone = selectedParties.Administrator?.Phone ?? NormalizeNullable(request.AdministratorPhone);
+        entity.AdministratorEmail = selectedParties.Administrator?.Email ?? NormalizeNullable(request.AdministratorEmail);
+        entity.Lawyer = selectedParties.Lawyer?.Name ?? NormalizeNullable(request.Lawyer);
+    }
+
+    private static void AttachPartyLinks(Property entity, PropertyAdministrationSectionRequest request)
+    {
+        AddPartyLink(entity, PropertyPartyRole.OWNER, request.ProprietaryPartyId);
+        AddPartyLink(entity, PropertyPartyRole.ADMINISTRATOR, request.AdministratorPartyId);
+        AddPartyLink(entity, PropertyPartyRole.LAWYER, request.LawyerPartyId);
+    }
+
+    private async Task SyncStoredPartyLinksAsync(Guid propertyId, PropertyAdministrationSectionRequest request, CancellationToken cancellationToken)
+    {
+        var existingLinks = await _dbContext.PropertyPartyLinks
+            .Where(x => x.PropertyId == propertyId
+                && (x.Role == PropertyPartyRole.OWNER
+                    || x.Role == PropertyPartyRole.ADMINISTRATOR
+                    || x.Role == PropertyPartyRole.LAWYER))
+            .ToListAsync(cancellationToken);
+
+        SyncStoredPartyLink(propertyId, existingLinks, PropertyPartyRole.OWNER, request.ProprietaryPartyId);
+        SyncStoredPartyLink(propertyId, existingLinks, PropertyPartyRole.ADMINISTRATOR, request.AdministratorPartyId);
+        SyncStoredPartyLink(propertyId, existingLinks, PropertyPartyRole.LAWYER, request.LawyerPartyId);
+    }
+
+    private void SyncStoredPartyLink(Guid propertyId, IReadOnlyCollection<PropertyPartyLink> existingLinks, PropertyPartyRole role, Guid? partyId)
+    {
+        var linksToRemove = existingLinks.Where(x => x.Role == role).ToList();
+        if (linksToRemove.Count > 0)
+        {
+            _dbContext.PropertyPartyLinks.RemoveRange(linksToRemove);
+        }
+
+        if (!partyId.HasValue)
+        {
+            return;
+        }
+
+        _dbContext.PropertyPartyLinks.Add(new PropertyPartyLink
+        {
+            PropertyId = propertyId,
+            PartyId = partyId.Value,
+            Role = role,
+            IsPrimary = true
+        });
+    }
+
+    private static void AddPartyLink(Property entity, PropertyPartyRole role, Guid? partyId)
+    {
+        if (!partyId.HasValue)
+        {
+            return;
+        }
+
+        entity.PartyLinks.Add(new PropertyPartyLink
+        {
+            Property = entity,
+            PartyId = partyId.Value,
+            Role = role,
+            IsPrimary = true
+        });
+    }
+
+    private static Guid? ResolveLinkedPartyId(Property entity, PropertyPartyRole role)
+        => entity.PartyLinks
+            .Where(x => x.Role == role && x.EndsAtUtc == null)
+            .OrderByDescending(x => x.IsPrimary)
+            .ThenByDescending(x => x.CreatedAtUtc)
+            .Select(x => (Guid?)x.PartyId)
+            .FirstOrDefault();
+
     private static void ValidateInitialRent(decimal? amount, DateOnly? effectiveFrom)
     {
         if (amount.HasValue ^ effectiveFrom.HasValue)
@@ -580,7 +703,12 @@ public sealed class PropertyService : IPropertyService
     }
 
     private static PropertyDto ToDto(Property entity, decimal? currentBaseRent)
-        => new(
+    {
+        var proprietaryPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.OWNER);
+        var administratorPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.ADMINISTRATOR);
+        var lawyerPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.LAWYER);
+
+        return new PropertyDto(
             entity.Id,
             entity.Code,
             entity.Title,
@@ -592,20 +720,27 @@ public sealed class PropertyService : IPropertyService
             PropertyStatusContract.GetStatus(entity),
             PropertyStatusContract.GetIdleReason(entity),
             entity.Proprietary,
+            proprietaryPartyId,
             entity.Administrator,
+            administratorPartyId,
+            lawyerPartyId,
             currentBaseRent,
             entity.CreatedAtUtc,
             new PropertyDocumentationSectionDto(entity.Registration, entity.Scripture, entity.RegistrationCertification),
             new PropertyCharacteristicsSectionDto(entity.NumOfRooms, entity.CleaningIncluded, entity.Elevator, entity.Garage, entity.UnoccupiedSince),
             new PropertyAdministrationSectionDto(
                 entity.Proprietary,
+                proprietaryPartyId,
                 entity.Administrator,
+                administratorPartyId,
                 entity.AdministratorPhone,
                 entity.AdministratorEmail,
                 entity.AdministrateTax,
                 entity.Lawyer,
+                lawyerPartyId,
                 entity.LawyerData,
                 entity.Observation));
+    }
 
     private static PropertyChargeTemplateDto ToChargeTemplateDto(PropertyChargeTemplate entity)
         => new(
@@ -757,4 +892,6 @@ public sealed class PropertyService : IPropertyService
             _ => query
         };
     }
+
+    private sealed record SelectedPropertyParties(Party? Proprietary, Party? Administrator, Party? Lawyer);
 }
