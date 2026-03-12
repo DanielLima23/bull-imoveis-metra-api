@@ -40,4 +40,6 @@ public sealed class Property : BaseEntity
     public ICollection<PropertyChargeTemplate> ChargeTemplates { get; set; } = new List<PropertyChargeTemplate>();
     public ICollection<PropertyHistoryEntry> HistoryEntries { get; set; } = new List<PropertyHistoryEntry>();
     public ICollection<PropertyAttachment> Attachments { get; set; } = new List<PropertyAttachment>();
+    public ICollection<PropertyPartyLink> PartyLinks { get; set; } = new List<PropertyPartyLink>();
+    public ICollection<PropertyDocument> Documents { get; set; } = new List<PropertyDocument>();
 }
