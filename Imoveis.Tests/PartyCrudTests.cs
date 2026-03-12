@@ -22,7 +22,7 @@ public sealed class PartyCrudTests
         var controller = CreateController(dbContext);
 
         var created = ExtractData(await controller.Create(
-            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", "Contato principal"),
+            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null, "Contato principal"),
             CancellationToken.None));
 
         Assert.Equal("PROPRIETARIO", created.Kind);
@@ -46,12 +46,13 @@ public sealed class PartyCrudTests
 
         var updated = ExtractData(await controller.Update(
             created.Id,
-            new PartyUpdateRequest("PRESTADOR_DE_SERVICO", "Empresa XYZ", "12345678000199", "contato@empresa.com", "1133334444", "Pessoa juridica", true),
+            new PartyUpdateRequest("PRESTADOR_DE_SERVICO", "Empresa XYZ", "12345678000199", "contato@empresa.com", "1133334444", "OAB 999", "Pessoa juridica", true),
             CancellationToken.None));
 
         Assert.Equal("PRESTADOR_DE_SERVICO", updated.Kind);
         Assert.Equal("Empresa XYZ", updated.Name);
         Assert.Equal("12345678000199", updated.DocumentNumber);
+        Assert.Null(updated.Oab);
     }
 
     [Fact]
@@ -61,13 +62,13 @@ public sealed class PartyCrudTests
         var controller = CreateController(dbContext);
 
         _ = ExtractData(await controller.Create(
-            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null),
+            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null, null),
             CancellationToken.None));
         _ = ExtractData(await controller.Create(
-            new PartyCreateRequest("ADVOGADO", "Ana Silva", "12345678901", "ana@teste.com", "11999990001", null),
+            new PartyCreateRequest("ADVOGADO", "Ana Silva", "12345678901", "ana@teste.com", "11999990001", "OAB/SP 12345", null),
             CancellationToken.None));
         _ = ExtractData(await controller.Create(
-            new PartyCreateRequest("CORRETOR", "Mario Silva", "12345678902", "mario@teste.com", "11999990002", null),
+            new PartyCreateRequest("CORRETOR", "Mario Silva", "12345678902", "mario@teste.com", "11999990002", null, null),
             CancellationToken.None));
 
         var query = ExtractObjectData<PagedResult<PartyDto>>(await controller.Query(
@@ -89,7 +90,7 @@ public sealed class PartyCrudTests
         var controller = CreateController(dbContext);
 
         var created = ExtractData(await controller.Create(
-            new PartyCreateRequest("CORRETOR", "Maria Corretora", "12345678900", "maria@teste.com", "11999991111", null),
+            new PartyCreateRequest("CORRETOR", "Maria Corretora", "12345678900", "maria@teste.com", "11999991111", null, null),
             CancellationToken.None));
 
         var deleteResult = await controller.Delete(created.Id, CancellationToken.None);
@@ -108,7 +109,7 @@ public sealed class PartyCrudTests
         var controller = CreateController(dbContext);
 
         var created = ExtractData(await controller.Create(
-            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null),
+            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null, null),
             CancellationToken.None));
 
         var property = new Property
@@ -148,10 +149,31 @@ public sealed class PartyCrudTests
         var service = new PartyService(dbContext);
 
         var created = await service.CreateAsync(
-            new PartyCreateRequest("OWNER", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null),
+            new PartyCreateRequest("OWNER", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null, null),
             CancellationToken.None);
 
         Assert.Equal("PROPRIETARIO", created.Kind);
+    }
+
+    [Fact]
+    public async Task LawyerOabIsPersistedOnlyForAdvogado()
+    {
+        await using var dbContext = CreateDbContext();
+        var service = new PartyService(dbContext);
+
+        var created = await service.CreateAsync(
+            new PartyCreateRequest("ADVOGADO", "Ana Silva", "12345678901", "ana@teste.com", "11999990001", "OAB/SP 12345", null),
+            CancellationToken.None);
+
+        Assert.Equal("OAB/SP 12345", created.Oab);
+
+        var updated = await service.UpdateAsync(
+            created.Id,
+            new PartyUpdateRequest("CORRETOR", "Ana Silva", "12345678901", "ana@teste.com", "11999990001", "OAB/SP 99999", null, true),
+            CancellationToken.None);
+
+        Assert.NotNull(updated);
+        Assert.Null(updated.Oab);
     }
 
     [Theory]

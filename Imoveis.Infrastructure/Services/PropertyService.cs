@@ -206,7 +206,6 @@ public sealed class PropertyService : IPropertyService
             Garage = request.Characteristics.Garage,
             UnoccupiedSince = request.Characteristics.UnoccupiedSince,
             AdministrateTax = NormalizeNullable(request.Administration.AdministrateTax),
-            LawyerData = NormalizeNullable(request.Administration.LawyerData),
             Observation = NormalizeNullable(request.Administration.Observation)
         };
 
@@ -259,7 +258,6 @@ public sealed class PropertyService : IPropertyService
         entity.Garage = request.Characteristics.Garage;
         entity.UnoccupiedSince = request.Characteristics.UnoccupiedSince;
         entity.AdministrateTax = NormalizeNullable(request.Administration.AdministrateTax);
-        entity.LawyerData = NormalizeNullable(request.Administration.LawyerData);
         entity.Observation = NormalizeNullable(request.Administration.Observation);
         ApplyAdministrationData(entity, request.Administration, selectedParties);
         await SyncStoredPartyLinksAsync(entity.Id, request.Administration, cancellationToken);
@@ -617,9 +615,10 @@ public sealed class PropertyService : IPropertyService
     {
         entity.Proprietary = selectedParties.Proprietary?.Name ?? NormalizeNullable(request.Proprietary);
         entity.Administrator = selectedParties.Administrator?.Name ?? NormalizeNullable(request.Administrator);
-        entity.AdministratorPhone = selectedParties.Administrator?.Phone ?? NormalizeNullable(request.AdministratorPhone);
-        entity.AdministratorEmail = selectedParties.Administrator?.Email ?? NormalizeNullable(request.AdministratorEmail);
+        entity.AdministratorPhone = selectedParties.Administrator?.Phone;
+        entity.AdministratorEmail = selectedParties.Administrator?.Email;
         entity.Lawyer = selectedParties.Lawyer?.Name ?? NormalizeNullable(request.Lawyer);
+        entity.LawyerData = selectedParties.Lawyer?.Oab;
     }
 
     private static void AttachPartyLinks(Property entity, PropertyAdministrationSectionRequest request)
@@ -733,12 +732,9 @@ public sealed class PropertyService : IPropertyService
                 proprietaryPartyId,
                 entity.Administrator,
                 administratorPartyId,
-                entity.AdministratorPhone,
-                entity.AdministratorEmail,
                 entity.AdministrateTax,
                 entity.Lawyer,
                 lawyerPartyId,
-                entity.LawyerData,
                 entity.Observation));
     }
 

@@ -48,12 +48,9 @@ public sealed record PropertyAdministrationSectionRequest(
     Guid? ProprietaryPartyId,
     string? Administrator,
     Guid? AdministratorPartyId,
-    string? AdministratorPhone,
-    string? AdministratorEmail,
     string? AdministrateTax,
     string? Lawyer,
     Guid? LawyerPartyId,
-    string? LawyerData,
     string? Observation);
 
 public sealed record PropertyCreateRequest(
@@ -100,12 +97,9 @@ public sealed record PropertyAdministrationSectionDto(
     Guid? ProprietaryPartyId,
     string? Administrator,
     Guid? AdministratorPartyId,
-    string? AdministratorPhone,
-    string? AdministratorEmail,
     string? AdministrateTax,
     string? Lawyer,
     Guid? LawyerPartyId,
-    string? LawyerData,
     string? Observation);
 
 public sealed record PropertyDto(

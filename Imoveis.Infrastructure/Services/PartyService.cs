@@ -32,7 +32,8 @@ public sealed class PartyService : IPartyService
                 x.Name.ToLower().Contains(search)
                 || (x.DocumentNumber != null && x.DocumentNumber.ToLower().Contains(search))
                 || (x.Email != null && x.Email.ToLower().Contains(search))
-                || (x.Phone != null && x.Phone.ToLower().Contains(search)));
+                || (x.Phone != null && x.Phone.ToLower().Contains(search))
+                || (x.Oab != null && x.Oab.ToLower().Contains(search)));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Kind))
@@ -73,14 +74,16 @@ public sealed class PartyService : IPartyService
 
     public async Task<PartyDto> CreateAsync(PartyCreateRequest request, CancellationToken cancellationToken)
     {
+        var kind = PartyKindContract.Parse(request.Kind, "kind");
         var entity = new Party
         {
-            Kind = PartyKindContract.Parse(request.Kind, "kind"),
+            Kind = kind,
             Name = request.Name.Trim(),
-            DocumentNumber = request.DocumentNumber?.Trim(),
-            Email = request.Email?.Trim(),
-            Phone = request.Phone?.Trim(),
-            Notes = request.Notes?.Trim(),
+            DocumentNumber = NormalizeNullable(request.DocumentNumber),
+            Email = NormalizeNullable(request.Email),
+            Phone = NormalizeNullable(request.Phone),
+            Oab = NormalizeOab(kind, request.Oab),
+            Notes = NormalizeNullable(request.Notes),
             IsActive = true
         };
 
@@ -100,10 +103,11 @@ public sealed class PartyService : IPartyService
 
         entity.Kind = PartyKindContract.Parse(request.Kind, "kind");
         entity.Name = request.Name.Trim();
-        entity.DocumentNumber = request.DocumentNumber?.Trim();
-        entity.Email = request.Email?.Trim();
-        entity.Phone = request.Phone?.Trim();
-        entity.Notes = request.Notes?.Trim();
+        entity.DocumentNumber = NormalizeNullable(request.DocumentNumber);
+        entity.Email = NormalizeNullable(request.Email);
+        entity.Phone = NormalizeNullable(request.Phone);
+        entity.Oab = NormalizeOab(entity.Kind, request.Oab);
+        entity.Notes = NormalizeNullable(request.Notes);
         entity.IsActive = request.IsActive;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -141,6 +145,7 @@ public sealed class PartyService : IPartyService
             x.DocumentNumber,
             x.Email,
             x.Phone,
+            x.Oab,
             x.Notes,
             x.IsActive,
             x.CreatedAtUtc);
@@ -153,9 +158,16 @@ public sealed class PartyService : IPartyService
             entity.DocumentNumber,
             entity.Email,
             entity.Phone,
+            entity.Oab,
             entity.Notes,
             entity.IsActive,
             entity.CreatedAtUtc);
+
+    private static string? NormalizeNullable(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? NormalizeOab(PartyKind kind, string? value)
+        => kind == PartyKind.ADVOGADO ? NormalizeNullable(value) : null;
 
     private static Expression<Func<Party, bool>> BuildKindPredicate(IReadOnlyList<PartyKind> kinds)
     {

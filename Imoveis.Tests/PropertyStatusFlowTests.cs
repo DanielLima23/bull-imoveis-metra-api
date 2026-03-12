@@ -57,11 +57,8 @@ public sealed class PropertyStatusFlowTests
               "administration": {
                 "proprietary": "Maria",
                 "administrator": "Carlos",
-                "administratorPhone": null,
-                "administratorEmail": null,
                 "administrateTax": null,
                 "lawyer": null,
-                "lawyerData": null,
                 "observation": "Atualizado"
               }
             }
@@ -150,9 +147,6 @@ public sealed class PropertyStatusFlowTests
                 "Maria",
                 null,
                 "Carlos",
-                null,
-                null,
-                null,
                 null,
                 null,
                 null,

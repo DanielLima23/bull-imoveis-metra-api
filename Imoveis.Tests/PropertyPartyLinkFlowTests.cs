@@ -17,7 +17,7 @@ public sealed class PropertyPartyLinkFlowTests
         await using var dbContext = CreateDbContext();
         var owner = CreateParty("PROPRIETARIO", "Maria Proprietaria", "11911110000", "maria@teste.com");
         var administrator = CreateParty("ADMINISTRADOR", "Carlos Admin", "11922220000", "carlos@teste.com");
-        var lawyer = CreateParty("ADVOGADO", "Ana Advogada", "11933330000", "ana@teste.com");
+        var lawyer = CreateParty("ADVOGADO", "Ana Advogada", "11933330000", "ana@teste.com", "OAB/SP 12345");
         dbContext.Parties.AddRange(owner, administrator, lawyer);
         await dbContext.SaveChangesAsync();
 
@@ -28,8 +28,6 @@ public sealed class PropertyPartyLinkFlowTests
             lawyer.Id,
             proprietary: null,
             administratorName: null,
-            administratorPhone: null,
-            administratorEmail: null,
             lawyerName: null), CancellationToken.None);
 
         Assert.Equal(owner.Id, created.ProprietaryPartyId);
@@ -37,9 +35,12 @@ public sealed class PropertyPartyLinkFlowTests
         Assert.Equal(lawyer.Id, created.LawyerPartyId);
         Assert.Equal(owner.Name, created.Proprietary);
         Assert.Equal(administrator.Name, created.Administrator);
-        Assert.Equal(administrator.Phone, created.Administration.AdministratorPhone);
-        Assert.Equal(administrator.Email, created.Administration.AdministratorEmail);
         Assert.Equal(lawyer.Name, created.Administration.Lawyer);
+
+        var storedProperty = await dbContext.Properties.FirstAsync(x => x.Id == created.Id);
+        Assert.Equal(administrator.Phone, storedProperty.AdministratorPhone);
+        Assert.Equal(administrator.Email, storedProperty.AdministratorEmail);
+        Assert.Equal(lawyer.Oab, storedProperty.LawyerData);
 
         var links = await dbContext.PropertyPartyLinks
             .Where(x => x.PropertyId == created.Id)
@@ -79,12 +80,9 @@ public sealed class PropertyPartyLinkFlowTests
                     ownerB.Id,
                     null,
                     null,
-                    null,
-                    null,
                     "10%",
                     null,
                     null,
-                    "OAB 123",
                     "Atualizado")),
             CancellationToken.None);
 
@@ -94,9 +92,12 @@ public sealed class PropertyPartyLinkFlowTests
         Assert.Null(updated.LawyerPartyId);
         Assert.Equal(ownerB.Name, updated.Proprietary);
         Assert.Null(updated.Administrator);
-        Assert.Null(updated.Administration.AdministratorPhone);
-        Assert.Null(updated.Administration.AdministratorEmail);
         Assert.Null(updated.Administration.Lawyer);
+
+        var storedProperty = await dbContext.Properties.FirstAsync(x => x.Id == created.Id);
+        Assert.Null(storedProperty.AdministratorPhone);
+        Assert.Null(storedProperty.AdministratorEmail);
+        Assert.Null(storedProperty.LawyerData);
 
         var links = await dbContext.PropertyPartyLinks
             .Where(x => x.PropertyId == created.Id)
@@ -109,7 +110,7 @@ public sealed class PropertyPartyLinkFlowTests
     }
 
     [Fact]
-    public async Task CreateWithoutPartyIdsKeepsLegacyManualFields()
+    public async Task CreateWithoutPartyIdsKeepsLegacyManualNames()
     {
         await using var dbContext = CreateDbContext();
         var service = new PropertyService(dbContext);
@@ -121,8 +122,6 @@ public sealed class PropertyPartyLinkFlowTests
                 null,
                 proprietary: "Maria Manual",
                 administratorName: "Carlos Manual",
-                administratorPhone: "11922220000",
-                administratorEmail: "carlos@manual.com",
                 lawyerName: "Ana Manual"),
             CancellationToken.None);
 
@@ -131,10 +130,13 @@ public sealed class PropertyPartyLinkFlowTests
         Assert.Null(created.LawyerPartyId);
         Assert.Equal("Maria Manual", created.Proprietary);
         Assert.Equal("Carlos Manual", created.Administrator);
-        Assert.Equal("11922220000", created.Administration.AdministratorPhone);
-        Assert.Equal("carlos@manual.com", created.Administration.AdministratorEmail);
         Assert.Equal("Ana Manual", created.Administration.Lawyer);
         Assert.False(await dbContext.PropertyPartyLinks.AnyAsync(x => x.PropertyId == created.Id));
+
+        var storedProperty = await dbContext.Properties.FirstAsync(x => x.Id == created.Id);
+        Assert.Null(storedProperty.AdministratorPhone);
+        Assert.Null(storedProperty.AdministratorEmail);
+        Assert.Null(storedProperty.LawyerData);
     }
 
     [Theory]
@@ -172,8 +174,6 @@ public sealed class PropertyPartyLinkFlowTests
         Guid? lawyerId,
         string? proprietary = "Maria Proprietaria",
         string? administratorName = "Carlos Admin",
-        string? administratorPhone = "11922220000",
-        string? administratorEmail = "carlos@teste.com",
         string? lawyerName = "Ana Advogada")
         => new(
             new PropertyIdentitySectionRequest(
@@ -192,23 +192,21 @@ public sealed class PropertyPartyLinkFlowTests
                 ownerId,
                 administratorName,
                 administratorId,
-                administratorPhone,
-                administratorEmail,
                 "10%",
                 lawyerName,
                 lawyerId,
-                "OAB 123",
                 null),
             null,
             null);
 
-    private static Party CreateParty(string kind, string name, string phone, string email)
+    private static Party CreateParty(string kind, string name, string phone, string email, string? oab = null)
         => new()
         {
             Kind = PartyKindContract.Parse(kind, "kind"),
             Name = name,
             Phone = phone,
             Email = email,
+            Oab = oab,
             IsActive = true
         };
 

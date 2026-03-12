@@ -10,6 +10,7 @@ public sealed class Party : BaseEntity
     public string? DocumentNumber { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    public string? Oab { get; set; }
     public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
 

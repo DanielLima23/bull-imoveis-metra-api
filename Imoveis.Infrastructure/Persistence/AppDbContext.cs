@@ -163,6 +163,7 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.DocumentNumber).HasMaxLength(40);
             entity.Property(x => x.Email).HasMaxLength(180);
             entity.Property(x => x.Phone).HasMaxLength(40);
+            entity.Property(x => x.Oab).HasMaxLength(60);
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.Property(x => x.IsActive).HasDefaultValue(true);
             entity.HasIndex(x => x.Name);
