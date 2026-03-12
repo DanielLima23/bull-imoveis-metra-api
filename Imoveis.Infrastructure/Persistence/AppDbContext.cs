@@ -1,4 +1,5 @@
 using Imoveis.Domain.Entities;
+using Imoveis.Application.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Imoveis.Infrastructure.Persistence;
@@ -152,7 +153,12 @@ public sealed class AppDbContext : DbContext
         {
             entity.ToTable("parties");
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.Kind).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Kind)
+                .HasConversion(
+                    x => PartyKindContract.GetCode(x),
+                    x => PartyKindContract.ParseStoredValue(x))
+                .HasMaxLength(30)
+                .IsRequired();
             entity.Property(x => x.Name).HasMaxLength(180).IsRequired();
             entity.Property(x => x.DocumentNumber).HasMaxLength(40);
             entity.Property(x => x.Email).HasMaxLength(180);

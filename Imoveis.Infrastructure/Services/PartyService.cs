@@ -36,7 +36,7 @@ public sealed class PartyService : IPartyService
 
         if (!string.IsNullOrWhiteSpace(request.Kind))
         {
-            var kind = ServiceHelpers.ParseEnum<PartyKind>(request.Kind, "kind");
+            var kind = PartyKindContract.Parse(request.Kind, "kind");
             query = query.Where(x => x.Kind == kind);
         }
 
@@ -69,7 +69,7 @@ public sealed class PartyService : IPartyService
     {
         var entity = new Party
         {
-            Kind = ServiceHelpers.ParseEnum<PartyKind>(request.Kind, "kind"),
+            Kind = PartyKindContract.Parse(request.Kind, "kind"),
             Name = request.Name.Trim(),
             DocumentNumber = request.DocumentNumber?.Trim(),
             Email = request.Email?.Trim(),
@@ -92,7 +92,7 @@ public sealed class PartyService : IPartyService
             return null;
         }
 
-        entity.Kind = ServiceHelpers.ParseEnum<PartyKind>(request.Kind, "kind");
+        entity.Kind = PartyKindContract.Parse(request.Kind, "kind");
         entity.Name = request.Name.Trim();
         entity.DocumentNumber = request.DocumentNumber?.Trim();
         entity.Email = request.Email?.Trim();

@@ -20,20 +20,20 @@ public sealed class PartyCrudTests
         var controller = CreateController(dbContext);
 
         var created = ExtractData(await controller.Create(
-            new PartyCreateRequest("PERSON", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", "Contato principal"),
+            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", "Contato principal"),
             CancellationToken.None));
 
-        Assert.Equal("PERSON", created.Kind);
+        Assert.Equal("PROPRIETARIO", created.Kind);
         Assert.Equal("Jose da Silva", created.Name);
         Assert.True(created.IsActive);
 
         var byId = ExtractData(await controller.GetById(created.Id, CancellationToken.None));
         Assert.Equal(created.Id, byId.Id);
-        Assert.Equal("PERSON", byId.Kind);
+        Assert.Equal("PROPRIETARIO", byId.Kind);
 
         var query = ExtractObjectData<PagedResult<PartyDto>>(await controller.Query(
             search: "Jose",
-            kind: "PERSON",
+            kind: "PROPRIETARIO",
             active: true,
             page: 1,
             pageSize: 20,
@@ -44,27 +44,40 @@ public sealed class PartyCrudTests
 
         var updated = ExtractData(await controller.Update(
             created.Id,
-            new PartyUpdateRequest("COMPANY", "Empresa XYZ", "12345678000199", "contato@empresa.com", "1133334444", "Pessoa juridica", true),
+            new PartyUpdateRequest("PRESTADOR_DE_SERVICO", "Empresa XYZ", "12345678000199", "contato@empresa.com", "1133334444", "Pessoa juridica", true),
             CancellationToken.None));
 
-        Assert.Equal("COMPANY", updated.Kind);
+        Assert.Equal("PRESTADOR_DE_SERVICO", updated.Kind);
         Assert.Equal("Empresa XYZ", updated.Name);
         Assert.Equal("12345678000199", updated.DocumentNumber);
     }
 
     [Fact]
-    public async Task CreatePartyRejectsLegacyRoleKinds()
+    public async Task CreatePartyAcceptsLegacyRoleAliasAndNormalizesResponse()
     {
         await using var dbContext = CreateDbContext();
         var service = new PartyService(dbContext);
 
-        var exception = await Assert.ThrowsAsync<AppException>(() =>
-            service.CreateAsync(
-                new PartyCreateRequest("OWNER", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null),
-                CancellationToken.None));
+        var created = await service.CreateAsync(
+            new PartyCreateRequest("OWNER", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null),
+            CancellationToken.None);
 
-        Assert.Equal("validation_error", exception.Code);
-        Assert.Equal("Invalid value for kind.", exception.Message);
+        Assert.Equal("PROPRIETARIO", created.Kind);
+    }
+
+    [Theory]
+    [InlineData("OWNER", "PROPRIETARIO")]
+    [InlineData("ADMINISTRATOR", "ADMINISTRADOR")]
+    [InlineData("GUARANTOR", "FIADOR")]
+    [InlineData("LAWYER", "ADVOGADO")]
+    [InlineData("BROKER", "CORRETOR")]
+    [InlineData("LEGAL_REPRESENTATIVE", "REPRESENTANTE_LEGAL")]
+    [InlineData("OTHER", "OUTRO")]
+    public void ParseStoredValueMapsLegacyCodes(string legacyValue, string expectedCode)
+    {
+        var parsed = PartyKindContract.ParseStoredValue(legacyValue);
+
+        Assert.Equal(expectedCode, PartyKindContract.GetCode(parsed));
     }
 
     private static AppDbContext CreateDbContext()
