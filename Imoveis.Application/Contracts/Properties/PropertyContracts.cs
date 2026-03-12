@@ -17,9 +17,7 @@ public sealed record PropertyIdentitySectionRequest(
     string City,
     string State,
     string ZipCode,
-    string PropertyType,
-    string OccupancyStatus,
-    string AssetState);
+    string PropertyType);
 
 public sealed record PropertyDocumentationSectionRequest(
     string? Registration,

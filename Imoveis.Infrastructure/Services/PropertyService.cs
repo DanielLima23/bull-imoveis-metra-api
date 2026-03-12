@@ -203,8 +203,8 @@ public sealed class PropertyService : IPropertyService
             State = request.Identity.State.Trim().ToUpperInvariant(),
             ZipCode = request.Identity.ZipCode.Trim(),
             PropertyType = request.Identity.PropertyType.Trim(),
-            OccupancyStatus = ServiceHelpers.ParseEnum<PropertyOccupancyStatus>(request.Identity.OccupancyStatus, "occupancyStatus"),
-            AssetState = ServiceHelpers.ParseEnum<PropertyAssetState>(request.Identity.AssetState, "assetState"),
+            OccupancyStatus = PropertyOccupancyStatus.VACANT,
+            AssetState = PropertyAssetState.READY,
             Registration = NormalizeNullable(request.Documentation.Registration),
             Scripture = NormalizeNullable(request.Documentation.Scripture),
             RegistrationCertification = NormalizeNullable(request.Documentation.RegistrationCertification),
@@ -257,8 +257,6 @@ public sealed class PropertyService : IPropertyService
         entity.State = request.Identity.State.Trim().ToUpperInvariant();
         entity.ZipCode = request.Identity.ZipCode.Trim();
         entity.PropertyType = request.Identity.PropertyType.Trim();
-        entity.OccupancyStatus = ServiceHelpers.ParseEnum<PropertyOccupancyStatus>(request.Identity.OccupancyStatus, "occupancyStatus");
-        entity.AssetState = ServiceHelpers.ParseEnum<PropertyAssetState>(request.Identity.AssetState, "assetState");
         entity.Registration = NormalizeNullable(request.Documentation.Registration);
         entity.Scripture = NormalizeNullable(request.Documentation.Scripture);
         entity.RegistrationCertification = NormalizeNullable(request.Documentation.RegistrationCertification);
