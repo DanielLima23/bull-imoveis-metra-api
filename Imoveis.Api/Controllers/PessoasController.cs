@@ -53,4 +53,14 @@ public sealed class PessoasController : ApiControllerBase
         var data = await _service.UpdateAsync(id, request, cancellationToken);
         return data is null ? NotFoundResponse() : OkResponse(data);
     }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var deleted = await _service.DeleteAsync(id, cancellationToken);
+        return deleted
+            ? OkResponse<object>(new { message = "Party deleted." })
+            : NotFoundResponse();
+    }
 }

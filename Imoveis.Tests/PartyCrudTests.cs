@@ -2,6 +2,8 @@ using Imoveis.Api.Contracts;
 using Imoveis.Api.Controllers;
 using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Parties;
+using Imoveis.Domain.Entities;
+using Imoveis.Domain.Enums;
 using Imoveis.Infrastructure.Persistence;
 using Imoveis.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
@@ -50,6 +52,65 @@ public sealed class PartyCrudTests
         Assert.Equal("PRESTADOR_DE_SERVICO", updated.Kind);
         Assert.Equal("Empresa XYZ", updated.Name);
         Assert.Equal("12345678000199", updated.DocumentNumber);
+    }
+
+    [Fact]
+    public async Task DeleteRemovesPartyFromDatabase()
+    {
+        await using var dbContext = CreateDbContext();
+        var controller = CreateController(dbContext);
+
+        var created = ExtractData(await controller.Create(
+            new PartyCreateRequest("CORRETOR", "Maria Corretora", "12345678900", "maria@teste.com", "11999991111", null),
+            CancellationToken.None));
+
+        var deleteResult = await controller.Delete(created.Id, CancellationToken.None);
+        AssertSuccess(deleteResult);
+
+        var byId = await controller.GetById(created.Id, CancellationToken.None);
+        Assert.IsType<NotFoundObjectResult>(byId.Result);
+
+        Assert.False(await dbContext.Parties.AnyAsync(x => x.Id == created.Id));
+    }
+
+    [Fact]
+    public async Task DeleteAlsoRemovesPropertyLinks()
+    {
+        await using var dbContext = CreateDbContext();
+        var controller = CreateController(dbContext);
+
+        var created = ExtractData(await controller.Create(
+            new PartyCreateRequest("PROPRIETARIO", "Jose da Silva", "12345678900", "jose@teste.com", "11999990000", null),
+            CancellationToken.None));
+
+        var property = new Property
+        {
+            Code = "IMV-TESTE-001",
+            Title = "Imovel teste",
+            AddressLine1 = "Rua A, 10 (Centro)",
+            City = "Sao Paulo",
+            State = "SP",
+            ZipCode = "01001000",
+            PropertyType = "Apartamento",
+            OccupancyStatus = PropertyOccupancyStatus.VACANT,
+            AssetState = PropertyAssetState.READY
+        };
+
+        dbContext.Properties.Add(property);
+        dbContext.PropertyPartyLinks.Add(new PropertyPartyLink
+        {
+            Property = property,
+            PartyId = created.Id,
+            Role = PropertyPartyRole.OWNER,
+            IsPrimary = true
+        });
+        await dbContext.SaveChangesAsync();
+
+        var deleted = await controller.Delete(created.Id, CancellationToken.None);
+        AssertSuccess(deleted);
+
+        Assert.False(await dbContext.Parties.AnyAsync(x => x.Id == created.Id));
+        Assert.False(await dbContext.PropertyPartyLinks.AnyAsync(x => x.PartyId == created.Id));
     }
 
     [Fact]
@@ -119,5 +180,13 @@ public sealed class PartyCrudTests
         var envelope = Assert.IsType<ApiResponse<object>>(objectResult.Value);
         Assert.True(envelope.Success);
         return Assert.IsType<T>(envelope.Data);
+    }
+
+    private static void AssertSuccess(ActionResult<ApiResponse<object>> actionResult)
+    {
+        var objectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var envelope = Assert.IsType<ApiResponse<object>>(objectResult.Value);
+        Assert.True(envelope.Success);
+        Assert.NotNull(envelope.Data);
     }
 }

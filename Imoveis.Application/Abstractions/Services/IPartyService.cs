@@ -9,4 +9,5 @@ public interface IPartyService
     Task<PartyDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<PartyDto> CreateAsync(PartyCreateRequest request, CancellationToken cancellationToken);
     Task<PartyDto?> UpdateAsync(Guid id, PartyUpdateRequest request, CancellationToken cancellationToken);
+    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
 }

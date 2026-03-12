@@ -105,6 +105,28 @@ public sealed class PartyService : IPartyService
         return ToDto(entity);
     }
 
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var entity = await _dbContext.Parties
+            .Include(x => x.PropertyLinks)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (entity is null)
+        {
+            return false;
+        }
+
+        if (entity.PropertyLinks.Count > 0)
+        {
+            _dbContext.PropertyPartyLinks.RemoveRange(entity.PropertyLinks);
+        }
+
+        _dbContext.Parties.Remove(entity);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
     private static System.Linq.Expressions.Expression<Func<Party, PartyDto>> ToDtoExpression()
         => x => new PartyDto(
             x.Id,
