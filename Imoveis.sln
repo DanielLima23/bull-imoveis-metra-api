@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imoveis.Domain", "Imoveis.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imoveis.Infrastructure", "Imoveis.Infrastructure\Imoveis.Infrastructure.csproj", "{DCE9EFAF-EC1E-482A-AA91-EEA1B95E5F0D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imoveis.Tests", "Imoveis.Tests\Imoveis.Tests.csproj", "{664E8503-7E28-4824-A31D-9E21762A206A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{DCE9EFAF-EC1E-482A-AA91-EEA1B95E5F0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCE9EFAF-EC1E-482A-AA91-EEA1B95E5F0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCE9EFAF-EC1E-482A-AA91-EEA1B95E5F0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{664E8503-7E28-4824-A31D-9E21762A206A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{664E8503-7E28-4824-A31D-9E21762A206A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{664E8503-7E28-4824-A31D-9E21762A206A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{664E8503-7E28-4824-A31D-9E21762A206A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
