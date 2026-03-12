@@ -1,6 +1,7 @@
 using Imoveis.Api.Contracts;
 using Imoveis.Api.Infrastructure;
 using Imoveis.Application.Abstractions.Services;
+using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Properties;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +23,7 @@ public sealed class ImoveisController : ApiControllerBase
     public async Task<ActionResult<ApiResponse<object>>> Query(
         [FromQuery] string? search,
         [FromQuery] string? status,
-        [FromQuery] string? occupancyStatus,
-        [FromQuery] string? assetState,
+        [FromQuery] string? motivoOciosidade,
         [FromQuery] string? propertyType,
         [FromQuery] string? city,
         [FromQuery] string? proprietary,
@@ -32,9 +32,17 @@ public sealed class ImoveisController : ApiControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        NormalizeLegacyStatus(status, ref occupancyStatus, ref assetState);
+        var occupancyStatus = Request.Query.TryGetValue("occupancyStatus", out var occupancyValue)
+            ? occupancyValue.ToString()
+            : null;
+
+        var assetState = Request.Query.TryGetValue("assetState", out var assetValue)
+            ? assetValue.ToString()
+            : null;
+
+        NormalizeLegacyStatus(ref status, occupancyStatus, assetState);
         var data = await _service.QueryAsync(
-            new PropertyQueryRequest(search, occupancyStatus, assetState, propertyType, city, proprietary, administrator, page, pageSize),
+            new PropertyQueryRequest(search, status, motivoOciosidade, propertyType, city, proprietary, administrator, page, pageSize),
             cancellationToken);
         return OkResponse<object>(data);
     }
@@ -152,32 +160,13 @@ public sealed class ImoveisController : ApiControllerBase
         return data is null ? NotFoundResponse() : OkResponse(data);
     }
 
-    private static void NormalizeLegacyStatus(string? status, ref string? occupancyStatus, ref string? assetState)
+    private static void NormalizeLegacyStatus(ref string? status, string? occupancyStatus, string? assetState)
     {
-        if (string.IsNullOrWhiteSpace(status))
+        if (!string.IsNullOrWhiteSpace(status))
         {
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(occupancyStatus) || !string.IsNullOrWhiteSpace(assetState))
-        {
-            return;
-        }
-
-        switch (status.Trim().ToUpperInvariant())
-        {
-            case "LEASED":
-                occupancyStatus = "OCCUPIED";
-                assetState = "READY";
-                break;
-            case "PREPARATION":
-                occupancyStatus = "VACANT";
-                assetState = "PREPARATION";
-                break;
-            default:
-                occupancyStatus = "VACANT";
-                assetState = "READY";
-                break;
-        }
+        status = PropertyStatusContract.TryMapLegacyStatus(occupancyStatus, assetState);
     }
 }

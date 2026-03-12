@@ -2,8 +2,8 @@ namespace Imoveis.Application.Contracts.Properties;
 
 public sealed record PropertyQueryRequest(
     string? Search,
-    string? OccupancyStatus,
-    string? AssetState,
+    string? Status,
+    string? MotivoOciosidade,
     string? PropertyType,
     string? City,
     string? Proprietary,
@@ -17,7 +17,9 @@ public sealed record PropertyIdentitySectionRequest(
     string City,
     string State,
     string ZipCode,
-    string PropertyType);
+    string PropertyType,
+    string Status,
+    string? MotivoOciosidade);
 
 public sealed record PropertyDocumentationSectionRequest(
     string? Registration,
@@ -55,7 +57,7 @@ public sealed record PropertyUpdateRequest(
     PropertyCharacteristicsSectionRequest Characteristics,
     PropertyAdministrationSectionRequest Administration);
 
-public sealed record PropertyStatusUpdateRequest(string OccupancyStatus, string AssetState);
+public sealed record PropertyStatusUpdateRequest(string Status, string? MotivoOciosidade);
 
 public sealed record PropertyRentReferenceCreateRequest(decimal Amount, DateOnly EffectiveFrom);
 
@@ -92,9 +94,8 @@ public sealed record PropertyDto(
     string State,
     string ZipCode,
     string PropertyType,
-    string OccupancyStatus,
-    string AssetState,
     string Status,
+    string? MotivoOciosidade,
     string? Proprietary,
     string? Administrator,
     decimal? CurrentBaseRent,

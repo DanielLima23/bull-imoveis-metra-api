@@ -101,11 +101,7 @@ public sealed class LeaseService : ILeaseService
 
         _dbContext.LeaseContracts.Add(entity);
 
-        property.OccupancyStatus = PropertyOccupancyStatus.OCCUPIED;
-        if (property.AssetState == PropertyAssetState.PREPARATION)
-        {
-            property.AssetState = PropertyAssetState.READY;
-        }
+        PropertyStatusContract.Apply(property, PropertyStatusContract.Alugado, null);
 
         GenerateReceivables(entity, DateOnly.FromDateTime(DateTime.UtcNow.Date));
 
@@ -148,11 +144,11 @@ public sealed class LeaseService : ILeaseService
 
         if (entity.Status is LeaseStatus.ENDED or LeaseStatus.CANCELED)
         {
-            entity.Property.OccupancyStatus = PropertyOccupancyStatus.VACANT;
+            PropertyStatusContract.Apply(entity.Property, PropertyStatusContract.Disponivel, null);
         }
         else
         {
-            entity.Property.OccupancyStatus = PropertyOccupancyStatus.OCCUPIED;
+            PropertyStatusContract.Apply(entity.Property, PropertyStatusContract.Alugado, null);
         }
 
         RebuildReceivables(entity, DateOnly.FromDateTime(DateTime.UtcNow.Date));
@@ -177,7 +173,7 @@ public sealed class LeaseService : ILeaseService
 
         entity.EndDate = request.EndDate;
         entity.Status = LeaseStatus.ENDED;
-        entity.Property.OccupancyStatus = PropertyOccupancyStatus.VACANT;
+        PropertyStatusContract.Apply(entity.Property, PropertyStatusContract.Disponivel, null);
 
         RebuildReceivables(entity, DateOnly.FromDateTime(DateTime.UtcNow.Date));
 

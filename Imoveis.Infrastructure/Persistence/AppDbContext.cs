@@ -90,6 +90,7 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.Lawyer).HasMaxLength(160);
             entity.Property(x => x.LawyerData).HasMaxLength(500);
             entity.Property(x => x.Observation).HasMaxLength(4000);
+            entity.Property(x => x.IdleReason).HasColumnName("VacancyReason").HasMaxLength(250);
         });
 
         modelBuilder.Entity<PropertyRentReference>(entity =>

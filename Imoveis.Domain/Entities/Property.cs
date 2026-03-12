@@ -29,6 +29,7 @@ public sealed class Property : BaseEntity
     public string? Lawyer { get; set; }
     public string? LawyerData { get; set; }
     public string? Observation { get; set; }
+    public string? IdleReason { get; set; }
     public DateOnly? UnoccupiedSince { get; set; }
 
     public ICollection<PropertyRentReference> RentReferences { get; set; } = new List<PropertyRentReference>();

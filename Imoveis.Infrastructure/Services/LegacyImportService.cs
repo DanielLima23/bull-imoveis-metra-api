@@ -1,4 +1,5 @@
 using Imoveis.Application.Abstractions.Services;
+using Imoveis.Application.Common;
 using Imoveis.Application.Contracts.Legacy;
 using Imoveis.Domain.Entities;
 using Imoveis.Domain.Enums;
@@ -34,6 +35,9 @@ public sealed class LegacyImportService : ILegacyImportService
 
         foreach (var estate in request.Estates)
         {
+            var status = MapLegacyBusinessStatus(estate.Status);
+            var motivoOciosidade = MapLegacyIdleReason(estate.Status);
+
             var property = new Property
             {
                 Code = $"LEGACY-{estate.Id}",
@@ -43,8 +47,6 @@ public sealed class LegacyImportService : ILegacyImportService
                 State = "SP",
                 ZipCode = "00000000",
                 PropertyType = NormalizeOrFallback(estate.Type, "Nao informado"),
-                OccupancyStatus = MapOccupancyStatus(estate.Status),
-                AssetState = MapAssetState(estate.Status),
                 Registration = NormalizeNullable(estate.Registration),
                 Scripture = NormalizeNullable(estate.Scripture),
                 RegistrationCertification = NormalizeNullable(estate.RegistrationCertification),
@@ -62,6 +64,8 @@ public sealed class LegacyImportService : ILegacyImportService
                 Observation = NormalizeNullable(estate.Observation),
                 UnoccupiedSince = estate.Unoccupied
             };
+
+            PropertyStatusContract.Apply(property, status, motivoOciosidade);
 
             _dbContext.Properties.Add(property);
             propertyMap[estate.Id] = property;
@@ -400,41 +404,56 @@ public sealed class LegacyImportService : ILegacyImportService
         return 1;
     }
 
-    private static PropertyOccupancyStatus MapOccupancyStatus(string? status)
+    private static string MapLegacyBusinessStatus(string? status)
     {
         var normalized = NormalizeKey(status);
-        return normalized.Contains("ALUG") || normalized.Contains("LOC") ? PropertyOccupancyStatus.OCCUPIED : PropertyOccupancyStatus.VACANT;
-    }
-
-    private static PropertyAssetState MapAssetState(string? status)
-    {
-        var normalized = NormalizeKey(status);
-        if (normalized.Contains("REFOR"))
+        if (normalized.Contains("ALUG") || normalized.Contains("LOC"))
         {
-            return PropertyAssetState.RENOVATION;
-        }
-
-        if (normalized.Contains("CONSTRU"))
-        {
-            return PropertyAssetState.CONSTRUCTION;
+            return PropertyStatusContract.Alugado;
         }
 
         if (normalized.Contains("VENDA"))
         {
-            return PropertyAssetState.FOR_SALE;
+            return PropertyStatusContract.A_Venda;
         }
 
-        if (normalized.Contains("NOVO"))
+        if (normalized.Contains("INATIV"))
         {
-            return PropertyAssetState.NEW;
+            return PropertyStatusContract.Inativo;
         }
 
-        if (normalized.Contains("PREPAR"))
+        if (normalized.Contains("REFOR") || normalized.Contains("RESCIS") || normalized.Contains("JURID"))
         {
-            return PropertyAssetState.PREPARATION;
+            return PropertyStatusContract.Ocioso;
         }
 
-        return PropertyAssetState.READY;
+        if (normalized.Contains("CONSTRU") || normalized.Contains("PREPAR") || normalized.Contains("DEMAND"))
+        {
+            return PropertyStatusContract.Demandas;
+        }
+
+        return PropertyStatusContract.Disponivel;
+    }
+
+    private static string? MapLegacyIdleReason(string? status)
+    {
+        var normalized = NormalizeKey(status);
+        if (normalized.Contains("REFOR"))
+        {
+            return PropertyStatusContract.Reforma;
+        }
+
+        if (normalized.Contains("RESCIS"))
+        {
+            return PropertyStatusContract.Rescisao;
+        }
+
+        if (normalized.Contains("JURID"))
+        {
+            return PropertyStatusContract.PendenciaJuridica;
+        }
+
+        return null;
     }
 
     private static ReceivableStatus MapReceivableStatus(string? status)

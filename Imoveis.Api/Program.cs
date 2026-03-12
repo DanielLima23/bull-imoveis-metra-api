@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Imoveis.Api.Middlewares;
+using Imoveis.Api.Swagger;
 using Imoveis.Application;
 using Imoveis.Infrastructure;
 using Imoveis.Infrastructure.Options;
@@ -89,6 +90,9 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    options.SchemaFilter<PropertyStatusSchemaFilter>();
+    options.OperationFilter<PropertyStatusOperationFilter>();
 });
 
 var app = builder.Build();

@@ -39,17 +39,7 @@ public sealed class PropertyService : IPropertyService
                 || (x.Administrator != null && x.Administrator.ToLower().Contains(search)));
         }
 
-        if (!string.IsNullOrWhiteSpace(request.OccupancyStatus))
-        {
-            var occupancyStatus = ServiceHelpers.ParseEnum<PropertyOccupancyStatus>(request.OccupancyStatus, "occupancyStatus");
-            query = query.Where(x => x.OccupancyStatus == occupancyStatus);
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.AssetState))
-        {
-            var assetState = ServiceHelpers.ParseEnum<PropertyAssetState>(request.AssetState, "assetState");
-            query = query.Where(x => x.AssetState == assetState);
-        }
+        query = ApplyStatusFilters(query, request.Status, request.MotivoOciosidade);
 
         if (!string.IsNullOrWhiteSpace(request.PropertyType))
         {
@@ -203,8 +193,6 @@ public sealed class PropertyService : IPropertyService
             State = request.Identity.State.Trim().ToUpperInvariant(),
             ZipCode = request.Identity.ZipCode.Trim(),
             PropertyType = request.Identity.PropertyType.Trim(),
-            OccupancyStatus = PropertyOccupancyStatus.VACANT,
-            AssetState = PropertyAssetState.READY,
             Registration = NormalizeNullable(request.Documentation.Registration),
             Scripture = NormalizeNullable(request.Documentation.Scripture),
             RegistrationCertification = NormalizeNullable(request.Documentation.RegistrationCertification),
@@ -222,6 +210,8 @@ public sealed class PropertyService : IPropertyService
             LawyerData = NormalizeNullable(request.Administration.LawyerData),
             Observation = NormalizeNullable(request.Administration.Observation)
         };
+
+        PropertyStatusContract.Apply(entity, request.Identity.Status, request.Identity.MotivoOciosidade);
 
         _dbContext.Properties.Add(entity);
 
@@ -257,6 +247,7 @@ public sealed class PropertyService : IPropertyService
         entity.State = request.Identity.State.Trim().ToUpperInvariant();
         entity.ZipCode = request.Identity.ZipCode.Trim();
         entity.PropertyType = request.Identity.PropertyType.Trim();
+        PropertyStatusContract.Apply(entity, request.Identity.Status, request.Identity.MotivoOciosidade);
         entity.Registration = NormalizeNullable(request.Documentation.Registration);
         entity.Scripture = NormalizeNullable(request.Documentation.Scripture);
         entity.RegistrationCertification = NormalizeNullable(request.Documentation.RegistrationCertification);
@@ -290,8 +281,7 @@ public sealed class PropertyService : IPropertyService
             return null;
         }
 
-        entity.OccupancyStatus = ServiceHelpers.ParseEnum<PropertyOccupancyStatus>(request.OccupancyStatus, "occupancyStatus");
-        entity.AssetState = ServiceHelpers.ParseEnum<PropertyAssetState>(request.AssetState, "assetState");
+        PropertyStatusContract.Apply(entity, request.Status, request.MotivoOciosidade);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -599,9 +589,8 @@ public sealed class PropertyService : IPropertyService
             entity.State,
             entity.ZipCode,
             entity.PropertyType,
-            entity.OccupancyStatus.ToString(),
-            entity.AssetState.ToString(),
-            ComposeLegacyStatus(entity),
+            PropertyStatusContract.GetStatus(entity),
+            PropertyStatusContract.GetIdleReason(entity),
             entity.Proprietary,
             entity.Administrator,
             currentBaseRent,
@@ -630,24 +619,6 @@ public sealed class PropertyService : IPropertyService
             entity.Notes,
             entity.IsActive,
             entity.CreatedAtUtc);
-
-    private static string ComposeLegacyStatus(Property entity)
-    {
-        if (entity.OccupancyStatus == PropertyOccupancyStatus.OCCUPIED)
-        {
-            return "LEASED";
-        }
-
-        return entity.AssetState switch
-        {
-            PropertyAssetState.PREPARATION => "PREPARATION",
-            PropertyAssetState.RENOVATION => "RENOVATION",
-            PropertyAssetState.CONSTRUCTION => "CONSTRUCTION",
-            PropertyAssetState.FOR_SALE => "FOR_SALE",
-            PropertyAssetState.NEW => "NEW",
-            _ => "AVAILABLE"
-        };
-    }
 
     private static decimal? ResolveCurrentBaseRent(Property entity)
         => entity.RentReferences
@@ -743,5 +714,47 @@ public sealed class PropertyService : IPropertyService
         }
 
         return $"IMV-{Guid.NewGuid():N}".ToUpperInvariant();
+    }
+
+    private static IQueryable<Property> ApplyStatusFilters(IQueryable<Property> query, string? status, string? motivoOciosidade)
+    {
+        var parsedReason = PropertyStatusContract.ParseIdleReason(motivoOciosidade);
+        if (parsedReason is not null)
+        {
+            query = query.Where(x => x.IdleReason == parsedReason && x.OccupancyStatus == PropertyOccupancyStatus.VACANT);
+        }
+
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return query;
+        }
+
+        var parsedStatus = PropertyStatusContract.ParseStatus(status);
+        return parsedStatus switch
+        {
+            var value when value == PropertyStatusContract.Alugado => query.Where(x => x.OccupancyStatus == PropertyOccupancyStatus.OCCUPIED),
+            var value when value == PropertyStatusContract.Disponivel => query.Where(x =>
+                x.OccupancyStatus == PropertyOccupancyStatus.VACANT
+                && x.AssetState == PropertyAssetState.READY
+                && x.IdleReason == null),
+            var value when value == PropertyStatusContract.Inativo => query.Where(x =>
+                x.OccupancyStatus == PropertyOccupancyStatus.VACANT
+                && x.AssetState == PropertyAssetState.NEW
+                && x.IdleReason == null),
+            var value when value == PropertyStatusContract.A_Venda => query.Where(x =>
+                x.OccupancyStatus == PropertyOccupancyStatus.VACANT
+                && x.AssetState == PropertyAssetState.FOR_SALE
+                && x.IdleReason == null),
+            var value when value == PropertyStatusContract.Demandas => query.Where(x =>
+                x.OccupancyStatus == PropertyOccupancyStatus.VACANT
+                && x.IdleReason == null
+                && (x.AssetState == PropertyAssetState.CONSTRUCTION
+                    || x.AssetState == PropertyAssetState.PREPARATION
+                    || x.AssetState == PropertyAssetState.RENOVATION)),
+            var value when value == PropertyStatusContract.Ocioso => query.Where(x =>
+                x.OccupancyStatus == PropertyOccupancyStatus.VACANT
+                && x.IdleReason != null),
+            _ => query
+        };
     }
 }
