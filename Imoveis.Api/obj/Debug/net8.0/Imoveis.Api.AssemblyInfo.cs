@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Imoveis.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7c9f4c22653c57aa8854236cbb98c09745a470a7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f53df6c36d9acebed78ac71278f4bfc9a7220aa3")]
 [assembly: System.Reflection.AssemblyProductAttribute("Imoveis.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Imoveis.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -132,20 +132,20 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                 type: "date",
                 nullable: true);
 
-            migrationBuilder.AddColumn<string>(
+            migrationBuilder.RenameColumn(
+                name: "Acronym",
+                table: "pendency_types",
+                newName: "Code");
+
+            migrationBuilder.AlterColumn<string>(
                 name: "Code",
                 table: "pendency_types",
                 type: "character varying(30)",
                 maxLength: 30,
                 nullable: false,
-                defaultValue: "");
-
-            migrationBuilder.AddColumn<string>(
-                name: "Description",
-                table: "pendency_types",
-                type: "character varying(500)",
-                maxLength: 500,
-                nullable: true);
+                oldClrType: typeof(string),
+                oldType: "character varying(20)",
+                oldMaxLength: 20);
 
             migrationBuilder.Sql("""
                 UPDATE properties
@@ -171,7 +171,8 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                     WHEN "Name" = 'Conta Atrasada' THEN 'FIN'
                     WHEN "Name" = 'Vistoria' THEN 'VIST'
                     ELSE 'PEND' || SUBSTRING(REPLACE(CAST("Id" AS text), '-', '') FROM 1 FOR 8)
-                END;
+                END
+                WHERE COALESCE("Code", '') = '';
                 """);
 
             migrationBuilder.AddColumn<string>(
@@ -230,25 +231,10 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                 maxLength: 40,
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "PaymentDay",
+            migrationBuilder.RenameColumn(
+                name: "AdjustmentIndex",
                 table: "lease_contracts",
-                type: "integer",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "PaymentLocation",
-                table: "lease_contracts",
-                type: "character varying(180)",
-                maxLength: 180,
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "ReadjustmentIndex",
-                table: "lease_contracts",
-                type: "character varying(50)",
-                maxLength: 50,
-                nullable: true);
+                newName: "ReadjustmentIndex");
 
             migrationBuilder.AddColumn<string>(
                 name: "SignatureRecognition",
@@ -352,27 +338,33 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "property_history_entries",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    PropertyId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Content = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
-                    OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_property_history_entries", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_property_history_entries_properties_PropertyId",
-                        column: x => x.PropertyId,
-                        principalTable: "properties",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.RenameColumn(
+                name: "Title",
+                table: "property_history_entries",
+                newName: "Content");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Content",
+                table: "property_history_entries",
+                type: "character varying(4000)",
+                maxLength: 4000,
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "character varying(180)",
+                oldMaxLength: 180);
+
+            migrationBuilder.Sql("""
+                UPDATE property_history_entries
+                SET "Content" = CASE
+                    WHEN COALESCE("Content", '') = '' THEN COALESCE("Description", '')
+                    WHEN COALESCE("Description", '') = '' THEN "Content"
+                    ELSE "Content" || E'\n\n' || "Description"
+                END;
+                """);
+
+            migrationBuilder.DropColumn(
+                name: "Description",
+                table: "property_history_entries");
 
             migrationBuilder.CreateIndex(
                 name: "IX_pendency_types_Code",
@@ -414,12 +406,13 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
             migrationBuilder.DropTable(
                 name: "property_charge_templates");
 
-            migrationBuilder.DropTable(
-                name: "property_history_entries");
-
             migrationBuilder.DropIndex(
                 name: "IX_pendency_types_Code",
                 table: "pendency_types");
+
+            migrationBuilder.DropIndex(
+                name: "IX_property_history_entries_PropertyId",
+                table: "property_history_entries");
 
             migrationBuilder.DropColumn(
                 name: "AdministrateTax",
@@ -486,14 +479,6 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                 table: "properties");
 
             migrationBuilder.DropColumn(
-                name: "Code",
-                table: "pendency_types");
-
-            migrationBuilder.DropColumn(
-                name: "Description",
-                table: "pendency_types");
-
-            migrationBuilder.DropColumn(
                 name: "ContractRegistration",
                 table: "lease_contracts");
 
@@ -526,18 +511,6 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                 table: "lease_contracts");
 
             migrationBuilder.DropColumn(
-                name: "PaymentDay",
-                table: "lease_contracts");
-
-            migrationBuilder.DropColumn(
-                name: "PaymentLocation",
-                table: "lease_contracts");
-
-            migrationBuilder.DropColumn(
-                name: "ReadjustmentIndex",
-                table: "lease_contracts");
-
-            migrationBuilder.DropColumn(
                 name: "SignatureRecognition",
                 table: "lease_contracts");
 
@@ -548,6 +521,54 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
             migrationBuilder.DropColumn(
                 name: "PaidBy",
                 table: "expense_installments");
+
+            migrationBuilder.AddColumn<string>(
+                name: "Description",
+                table: "property_history_entries",
+                type: "character varying(2000)",
+                maxLength: 2000,
+                nullable: true);
+
+            migrationBuilder.Sql("""
+                UPDATE property_history_entries
+                SET "Content" = LEFT(COALESCE("Content", ''), 180),
+                    "Description" = NULL;
+                """);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Content",
+                table: "property_history_entries",
+                type: "character varying(180)",
+                maxLength: 180,
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "character varying(4000)",
+                oldMaxLength: 4000);
+
+            migrationBuilder.RenameColumn(
+                name: "Content",
+                table: "property_history_entries",
+                newName: "Title");
+
+            migrationBuilder.RenameColumn(
+                name: "Code",
+                table: "pendency_types",
+                newName: "Acronym");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Acronym",
+                table: "pendency_types",
+                type: "character varying(20)",
+                maxLength: 20,
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "character varying(30)",
+                oldMaxLength: 30);
+
+            migrationBuilder.RenameColumn(
+                name: "ReadjustmentIndex",
+                table: "lease_contracts",
+                newName: "AdjustmentIndex");
 
             migrationBuilder.Sql("""
                 UPDATE properties
