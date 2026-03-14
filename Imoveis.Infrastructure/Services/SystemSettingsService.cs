@@ -44,6 +44,7 @@ public sealed class SystemSettingsService : ISystemSettingsService
         entity.SecondaryColor = palette.SecondaryColor;
         entity.AccentColor = palette.AccentColor;
         entity.EnableAnimations = request.EnableAnimations;
+        entity.EnableGuidedFlows = request.EnableGuidedFlows;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -167,7 +168,10 @@ public sealed class SystemSettingsService : ISystemSettingsService
             entity.SecondaryColor,
             entity.AccentColor,
             entity.EnableAnimations,
-            entity.UpdatedAtUtc ?? entity.CreatedAtUtc);
+            entity.UpdatedAtUtc ?? entity.CreatedAtUtc)
+        {
+            EnableGuidedFlows = entity.EnableGuidedFlows
+        };
 
     private sealed record ThemePalette(string PrimaryColor, string SecondaryColor, string AccentColor);
 }

@@ -75,6 +75,12 @@ public sealed class LeaseService : ILeaseService
         var tenant = await _dbContext.Tenants.FirstOrDefaultAsync(x => x.Id == request.TenantId, cancellationToken)
             ?? throw new AppException("Tenant not found.", 404, "not_found");
 
+        await LeaseBusinessRules.EnsureSingleActiveLeaseAsync(
+            _dbContext,
+            request.PropertyId,
+            null,
+            cancellationToken);
+
         var entity = new LeaseContract
         {
             PropertyId = request.PropertyId,
@@ -128,7 +134,17 @@ public sealed class LeaseService : ILeaseService
         entity.EndDate = request.EndDate;
         entity.MonthlyRent = request.MonthlyRent;
         entity.DepositAmount = request.DepositAmount;
-        entity.Status = ServiceHelpers.ParseEnum<LeaseStatus>(request.Status, "status");
+        var targetStatus = ServiceHelpers.ParseEnum<LeaseStatus>(request.Status, "status");
+        if (targetStatus == LeaseStatus.ACTIVE)
+        {
+            await LeaseBusinessRules.EnsureSingleActiveLeaseAsync(
+                _dbContext,
+                entity.PropertyId,
+                entity.Id,
+                cancellationToken);
+        }
+
+        entity.Status = targetStatus;
         entity.ContractWith = NormalizeNullable(request.ContractWith);
         entity.PaymentDay = request.PaymentDay;
         entity.PaymentLocation = NormalizeNullable(request.PaymentLocation);
@@ -144,13 +160,22 @@ public sealed class LeaseService : ILeaseService
         entity.CleaningIncluded = request.CleaningIncluded;
         entity.Notes = NormalizeNullable(request.Notes);
 
-        if (entity.Status is LeaseStatus.ENDED or LeaseStatus.CANCELED)
+        if (entity.Status == LeaseStatus.ACTIVE)
         {
-            PropertyStatusContract.Apply(entity.Property, PropertyStatusContract.Disponivel, null);
+            PropertyStatusContract.Apply(entity.Property, PropertyStatusContract.Alugado, null);
         }
         else
         {
-            PropertyStatusContract.Apply(entity.Property, PropertyStatusContract.Alugado, null);
+            var otherActiveLeaseId = await LeaseBusinessRules.GetActiveLeaseIdAsync(
+                _dbContext,
+                entity.PropertyId,
+                entity.Id,
+                cancellationToken);
+
+            PropertyStatusContract.Apply(
+                entity.Property,
+                otherActiveLeaseId.HasValue ? PropertyStatusContract.Alugado : PropertyStatusContract.Disponivel,
+                null);
         }
 
         RebuildReceivables(entity, DateOnly.FromDateTime(DateTime.UtcNow.Date));
@@ -175,7 +200,16 @@ public sealed class LeaseService : ILeaseService
 
         entity.EndDate = request.EndDate;
         entity.Status = LeaseStatus.ENDED;
-        PropertyStatusContract.Apply(entity.Property, PropertyStatusContract.Disponivel, null);
+        var otherActiveLeaseId = await LeaseBusinessRules.GetActiveLeaseIdAsync(
+            _dbContext,
+            entity.PropertyId,
+            entity.Id,
+            cancellationToken);
+
+        PropertyStatusContract.Apply(
+            entity.Property,
+            otherActiveLeaseId.HasValue ? PropertyStatusContract.Alugado : PropertyStatusContract.Disponivel,
+            null);
 
         RebuildReceivables(entity, DateOnly.FromDateTime(DateTime.UtcNow.Date));
 

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Imoveis.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d7e1c48f22b1a8c3ba2fc125f5785880c8f32ccb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fefaa197585c2e09cfa43391c4dcdfe3dcdef88f")]
 [assembly: System.Reflection.AssemblyProductAttribute("Imoveis.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Imoveis.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

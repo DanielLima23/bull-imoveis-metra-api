@@ -11,4 +11,5 @@ public sealed class SystemSettings : BaseEntity
     public string SecondaryColor { get; set; } = "#0A58BA";
     public string AccentColor { get; set; } = "#06B6D4";
     public bool EnableAnimations { get; set; } = true;
+    public bool EnableGuidedFlows { get; set; }
 }

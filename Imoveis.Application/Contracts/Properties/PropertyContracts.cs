@@ -119,7 +119,11 @@ public sealed record PropertyDto(
     DateTime CreatedAtUtc,
     PropertyDocumentationSectionDto Documentation,
     PropertyCharacteristicsSectionDto Characteristics,
-    PropertyAdministrationSectionDto Administration);
+    PropertyAdministrationSectionDto Administration)
+{
+    public bool HasActiveLease { get; init; }
+    public Guid? ActiveLeaseId { get; init; }
+}
 
 public sealed record PropertyChargeTemplateCreateRequest(
     string Kind,

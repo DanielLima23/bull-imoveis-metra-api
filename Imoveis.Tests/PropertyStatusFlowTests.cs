@@ -2,7 +2,9 @@ using System.Text.Json;
 using Imoveis.Api.Contracts;
 using Imoveis.Api.Controllers;
 using Imoveis.Application.Common;
+using Imoveis.Application.Contracts.Leases;
 using Imoveis.Application.Contracts.Properties;
+using Imoveis.Domain.Entities;
 using Imoveis.Infrastructure.Persistence;
 using Imoveis.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
@@ -93,6 +95,32 @@ public sealed class PropertyStatusFlowTests
         Assert.Single(query.Items);
         Assert.Equal(created.Id, query.Items[0].Id);
 
+        var tenantId = await SeedTenantAsync(dbContext, "Joao Locatario", "12345678901");
+        var leaseService = new LeaseService(dbContext);
+        await leaseService.CreateAsync(
+            new LeaseCreateRequest(
+                created.Id,
+                tenantId,
+                new DateOnly(2026, 3, 13),
+                null,
+                2500m,
+                1000m,
+                "Joao Locatario",
+                5,
+                "Imobiliaria",
+                "IPCA",
+                "REG-001",
+                "Seguro",
+                "Cartorio",
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                "Contrato inicial"),
+            CancellationToken.None);
+
         var statusRequest = JsonSerializer.Deserialize<PropertyStatusUpdateRequest>(
             """
             {
@@ -152,6 +180,22 @@ public sealed class PropertyStatusFlowTests
                 null),
             null,
             null);
+
+    private static async Task<Guid> SeedTenantAsync(AppDbContext dbContext, string name, string documentNumber)
+    {
+        var tenant = new Tenant
+        {
+            Name = name,
+            DocumentNumber = documentNumber,
+            Email = $"{documentNumber}@teste.com",
+            Phone = "11999990000",
+            IsActive = true
+        };
+
+        dbContext.Tenants.Add(tenant);
+        await dbContext.SaveChangesAsync();
+        return tenant.Id;
+    }
 
     private static AppDbContext CreateDbContext()
     {

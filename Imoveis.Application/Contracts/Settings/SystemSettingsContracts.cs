@@ -9,10 +9,16 @@ public sealed record SystemSettingsDto(
     string SecondaryColor,
     string AccentColor,
     bool EnableAnimations,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc)
+{
+    public bool EnableGuidedFlows { get; init; }
+}
 
 public sealed record SystemSettingsUpdateRequest(
     string BrandName,
     string BrandShortName,
     string ThemePreset,
-    bool EnableAnimations);
+    bool EnableAnimations)
+{
+    public bool EnableGuidedFlows { get; init; }
+}

@@ -237,6 +237,10 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.CleaningIncluded).HasDefaultValue(false);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.HasIndex(x => x.PropertyId)
+                .HasDatabaseName("IX_lease_contracts_PropertyId_active")
+                .IsUnique()
+                .HasFilter("\"Status\" = 'ACTIVE'");
 
             entity.HasOne(x => x.Property)
                 .WithMany(x => x.Leases)
@@ -384,6 +388,7 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.SecondaryColor).HasMaxLength(7).IsRequired();
             entity.Property(x => x.AccentColor).HasMaxLength(7).IsRequired();
             entity.Property(x => x.EnableAnimations).HasDefaultValue(true);
+            entity.Property(x => x.EnableGuidedFlows).HasDefaultValue(false);
         });
     }
 

@@ -92,6 +92,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     options.SchemaFilter<PropertyStatusSchemaFilter>();
+    options.SchemaFilter<SystemSettingsSchemaFilter>();
     options.SchemaFilter<PartyKindSchemaFilter>();
     options.OperationFilter<PropertyStatusOperationFilter>();
     options.OperationFilter<PartyKindOperationFilter>();

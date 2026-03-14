@@ -227,7 +227,8 @@ public sealed class PropertyService : IPropertyService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return ToDto(entity, request.InitialRentAmount);
+        return await GetByIdAsync(entity.Id, cancellationToken)
+            ?? throw new InvalidOperationException("Property should exist after creation.");
     }
 
     public async Task<PropertyDto?> UpdateAsync(Guid id, PropertyUpdateRequest request, CancellationToken cancellationToken)
@@ -241,6 +242,12 @@ public sealed class PropertyService : IPropertyService
         {
             return null;
         }
+
+        await LeaseBusinessRules.EnsurePropertyStatusChangeAllowedAsync(
+            _dbContext,
+            id,
+            request.Identity.Status,
+            cancellationToken);
 
         entity.Title = request.Identity.Title.Trim();
         entity.AddressLine1 = request.Identity.AddressLine1.Trim();
@@ -276,11 +283,17 @@ public sealed class PropertyService : IPropertyService
             return null;
         }
 
+        await LeaseBusinessRules.EnsurePropertyStatusChangeAllowedAsync(
+            _dbContext,
+            id,
+            request.Status,
+            cancellationToken);
+
         PropertyStatusContract.Apply(entity, request.Status, request.ResolveMotivoOciosidade());
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return ToDto(entity, ResolveCurrentBaseRent(entity));
+        return await GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<PropertyRentReferenceDto?> AddRentReferenceAsync(Guid propertyId, PropertyRentReferenceCreateRequest request, CancellationToken cancellationToken)
@@ -705,6 +718,11 @@ public sealed class PropertyService : IPropertyService
         var administratorPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.ADMINISTRATOR);
         var lawyerPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.LAWYER);
         var unoccupiedSince = ResolveUnoccupiedSince(entity);
+        var activeLeaseId = entity.Leases
+            .Where(x => x.Status == LeaseStatus.ACTIVE)
+            .OrderByDescending(x => x.StartDate)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefault();
 
         return new PropertyDto(
             entity.Id,
@@ -734,7 +752,11 @@ public sealed class PropertyService : IPropertyService
                 entity.AdministrateTax,
                 entity.Lawyer,
                 lawyerPartyId,
-                entity.Observation));
+                entity.Observation))
+        {
+            HasActiveLease = activeLeaseId.HasValue,
+            ActiveLeaseId = activeLeaseId
+        };
     }
 
     private static DateOnly? ResolveUnoccupiedSince(Property entity)
