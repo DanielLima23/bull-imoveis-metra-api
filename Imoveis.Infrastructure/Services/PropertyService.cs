@@ -25,9 +25,10 @@ public sealed class PropertyService : IPropertyService
         var pageSize = ServiceHelpers.NormalizePageSize(request.PageSize);
 
         var query = _dbContext.Properties
-            .AsNoTracking()
+            .AsNoTrackingWithIdentityResolution()
             .Include(x => x.RentReferences)
             .Include(x => x.PartyLinks)
+            .Include(x => x.Leases)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -89,9 +90,10 @@ public sealed class PropertyService : IPropertyService
     public async Task<PropertyDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.Properties
-            .AsNoTracking()
+            .AsNoTrackingWithIdentityResolution()
             .Include(x => x.RentReferences)
             .Include(x => x.PartyLinks)
+            .Include(x => x.Leases)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity is null ? null : ToDto(entity, ResolveCurrentBaseRent(entity));
@@ -100,7 +102,7 @@ public sealed class PropertyService : IPropertyService
     public async Task<PropertyDetailDto?> GetDetailAsync(Guid id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.Properties
-            .AsNoTracking()
+            .AsNoTrackingWithIdentityResolution()
             .Include(x => x.RentReferences)
             .Include(x => x.PartyLinks)
             .Include(x => x.ChargeTemplates)
@@ -201,10 +203,8 @@ public sealed class PropertyService : IPropertyService
             Scripture = NormalizeNullable(request.Documentation.Scripture),
             RegistrationCertification = NormalizeNullable(request.Documentation.RegistrationCertification),
             NumOfRooms = request.Characteristics.NumOfRooms,
-            CleaningIncluded = request.Characteristics.CleaningIncluded,
             Elevator = request.Characteristics.Elevator,
             Garage = request.Characteristics.Garage,
-            UnoccupiedSince = request.Characteristics.UnoccupiedSince,
             AdministrateTax = NormalizeNullable(request.Administration.AdministrateTax),
             Observation = NormalizeNullable(request.Administration.Observation)
         };
@@ -253,10 +253,8 @@ public sealed class PropertyService : IPropertyService
         entity.Scripture = NormalizeNullable(request.Documentation.Scripture);
         entity.RegistrationCertification = NormalizeNullable(request.Documentation.RegistrationCertification);
         entity.NumOfRooms = request.Characteristics.NumOfRooms;
-        entity.CleaningIncluded = request.Characteristics.CleaningIncluded;
         entity.Elevator = request.Characteristics.Elevator;
         entity.Garage = request.Characteristics.Garage;
-        entity.UnoccupiedSince = request.Characteristics.UnoccupiedSince;
         entity.AdministrateTax = NormalizeNullable(request.Administration.AdministrateTax);
         entity.Observation = NormalizeNullable(request.Administration.Observation);
         ApplyAdministrationData(entity, request.Administration, selectedParties);
@@ -706,6 +704,7 @@ public sealed class PropertyService : IPropertyService
         var proprietaryPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.OWNER);
         var administratorPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.ADMINISTRATOR);
         var lawyerPartyId = ResolveLinkedPartyId(entity, PropertyPartyRole.LAWYER);
+        var unoccupiedSince = ResolveUnoccupiedSince(entity);
 
         return new PropertyDto(
             entity.Id,
@@ -726,7 +725,7 @@ public sealed class PropertyService : IPropertyService
             currentBaseRent,
             entity.CreatedAtUtc,
             new PropertyDocumentationSectionDto(entity.Registration, entity.Scripture, entity.RegistrationCertification),
-            new PropertyCharacteristicsSectionDto(entity.NumOfRooms, entity.CleaningIncluded, entity.Elevator, entity.Garage, entity.UnoccupiedSince),
+            new PropertyCharacteristicsSectionDto(entity.NumOfRooms, entity.Elevator, entity.Garage, unoccupiedSince),
             new PropertyAdministrationSectionDto(
                 entity.Proprietary,
                 proprietaryPartyId,
@@ -736,6 +735,20 @@ public sealed class PropertyService : IPropertyService
                 entity.Lawyer,
                 lawyerPartyId,
                 entity.Observation));
+    }
+
+    private static DateOnly? ResolveUnoccupiedSince(Property entity)
+    {
+        if (entity.OccupancyStatus == PropertyOccupancyStatus.OCCUPIED)
+        {
+            return null;
+        }
+
+        return entity.Leases
+            .Where(x => x.Status == LeaseStatus.ENDED && x.EndDate.HasValue)
+            .OrderByDescending(x => x.EndDate)
+            .Select(x => x.EndDate)
+            .FirstOrDefault();
     }
 
     private static PropertyChargeTemplateDto ToChargeTemplateDto(PropertyChargeTemplate entity)

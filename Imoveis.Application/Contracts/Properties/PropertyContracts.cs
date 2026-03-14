@@ -38,10 +38,8 @@ public sealed record PropertyDocumentationSectionRequest(
 
 public sealed record PropertyCharacteristicsSectionRequest(
     int? NumOfRooms,
-    bool CleaningIncluded,
     bool Elevator,
-    bool Garage,
-    DateOnly? UnoccupiedSince);
+    bool Garage);
 
 public sealed record PropertyAdministrationSectionRequest(
     string? Proprietary,
@@ -87,7 +85,6 @@ public sealed record PropertyDocumentationSectionDto(
 
 public sealed record PropertyCharacteristicsSectionDto(
     int? NumOfRooms,
-    bool CleaningIncluded,
     bool Elevator,
     bool Garage,
     DateOnly? UnoccupiedSince);

@@ -234,6 +234,7 @@ public sealed class AppDbContext : DbContext
             entity.Property(x => x.GuarantorName).HasMaxLength(180);
             entity.Property(x => x.GuarantorDocument).HasMaxLength(80);
             entity.Property(x => x.GuarantorPhone).HasMaxLength(40);
+            entity.Property(x => x.CleaningIncluded).HasDefaultValue(false);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
 

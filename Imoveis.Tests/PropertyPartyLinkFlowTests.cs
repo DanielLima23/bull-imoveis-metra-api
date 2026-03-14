@@ -74,7 +74,7 @@ public sealed class PropertyPartyLinkFlowTests
             new PropertyUpdateRequest(
                 new PropertyIdentitySectionRequest("Apartamento Centro", "Rua A, 10 (Centro)", "Sao Paulo", "SP", "01001000", "Apartamento", PropertyStatusContract.Disponivel, null),
                 new PropertyDocumentationSectionRequest(null, null, null),
-                new PropertyCharacteristicsSectionRequest(2, false, false, true, null),
+                new PropertyCharacteristicsSectionRequest(2, false, true),
                 new PropertyAdministrationSectionRequest(
                     null,
                     ownerB.Id,
@@ -186,7 +186,7 @@ public sealed class PropertyPartyLinkFlowTests
                 PropertyStatusContract.Disponivel,
                 null),
             new PropertyDocumentationSectionRequest(null, null, null),
-            new PropertyCharacteristicsSectionRequest(2, false, false, true, null),
+            new PropertyCharacteristicsSectionRequest(2, false, true),
             new PropertyAdministrationSectionRequest(
                 proprietary,
                 ownerId,

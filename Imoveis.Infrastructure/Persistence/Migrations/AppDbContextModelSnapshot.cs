@@ -116,6 +116,11 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("CleaningIncluded")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("ContractRegistration")
                         .HasMaxLength(180)
                         .HasColumnType("character varying(180)");

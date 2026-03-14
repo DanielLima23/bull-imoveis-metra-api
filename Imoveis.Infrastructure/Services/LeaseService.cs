@@ -95,6 +95,7 @@ public sealed class LeaseService : ILeaseService
             GuarantorName = NormalizeNullable(request.GuarantorName),
             GuarantorDocument = NormalizeNullable(request.GuarantorDocument),
             GuarantorPhone = NormalizeNullable(request.GuarantorPhone),
+            CleaningIncluded = request.CleaningIncluded,
             Notes = NormalizeNullable(request.Notes),
             Status = LeaseStatus.ACTIVE
         };
@@ -140,6 +141,7 @@ public sealed class LeaseService : ILeaseService
         entity.GuarantorName = NormalizeNullable(request.GuarantorName);
         entity.GuarantorDocument = NormalizeNullable(request.GuarantorDocument);
         entity.GuarantorPhone = NormalizeNullable(request.GuarantorPhone);
+        entity.CleaningIncluded = request.CleaningIncluded;
         entity.Notes = NormalizeNullable(request.Notes);
 
         if (entity.Status is LeaseStatus.ENDED or LeaseStatus.CANCELED)
@@ -196,18 +198,50 @@ public sealed class LeaseService : ILeaseService
 
     private void RebuildReceivables(LeaseContract entity, DateOnly today)
     {
-        var paidByCompetence = entity.ReceivableInstallments
-            .Where(x => x.Status == ReceivableStatus.RECEIVED)
-            .ToDictionary(x => x.CompetenceDate, x => x);
+        var scheduleEnd = ResolveScheduleEnd(entity);
+        var current = new DateOnly(entity.StartDate.Year, entity.StartDate.Month, 1);
+        var endCompetence = new DateOnly(scheduleEnd.Year, scheduleEnd.Month, 1);
+        var installmentsByCompetence = entity.ReceivableInstallments.ToDictionary(x => x.CompetenceDate);
 
-        var canceledOrOpen = entity.ReceivableInstallments
-            .Where(x => x.Status != ReceivableStatus.RECEIVED)
-            .ToList();
+        while (current <= endCompetence)
+        {
+            var dueDay = Math.Clamp(entity.PaymentDay ?? 5, 1, DateTime.DaysInMonth(current.Year, current.Month));
+            var dueDate = new DateOnly(current.Year, current.Month, dueDay);
 
-        _dbContext.LeaseReceivableInstallments.RemoveRange(canceledOrOpen);
-        entity.ReceivableInstallments = paidByCompetence.Values.ToList();
+            if (installmentsByCompetence.TryGetValue(current, out var installment))
+            {
+                installment.DueDate = dueDate;
+                installment.ExpectedAmount = entity.MonthlyRent;
 
-        GenerateReceivables(entity, today, paidByCompetence.Keys.ToHashSet());
+                if (installment.Status != ReceivableStatus.RECEIVED)
+                {
+                    installment.Status = ResolveReceivableStatus(entity.Status, dueDate, today);
+                    installment.PaidAmount = null;
+                    installment.PaidAtUtc = null;
+                    installment.PaidBy = null;
+                }
+            }
+            else
+            {
+                entity.ReceivableInstallments.Add(new LeaseReceivableInstallment
+                {
+                    CompetenceDate = current,
+                    DueDate = dueDate,
+                    ExpectedAmount = entity.MonthlyRent,
+                    Status = ResolveReceivableStatus(entity.Status, dueDate, today)
+                });
+            }
+
+            current = current.AddMonths(1);
+        }
+
+        foreach (var installment in entity.ReceivableInstallments.Where(x => x.CompetenceDate > endCompetence && x.Status != ReceivableStatus.RECEIVED))
+        {
+            installment.Status = ReceivableStatus.CANCELED;
+            installment.PaidAmount = null;
+            installment.PaidAtUtc = null;
+            installment.PaidBy = null;
+        }
     }
 
     private void GenerateReceivables(LeaseContract entity, DateOnly today, HashSet<DateOnly>? skipCompetences = null)
@@ -291,6 +325,7 @@ public sealed class LeaseService : ILeaseService
             entity.GuarantorName,
             entity.GuarantorDocument,
             entity.GuarantorPhone,
+            entity.CleaningIncluded,
             entity.Notes,
             entity.CreatedAtUtc);
 

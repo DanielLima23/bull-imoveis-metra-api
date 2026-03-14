@@ -49,10 +49,8 @@ public sealed class PropertyStatusFlowTests
               },
               "characteristics": {
                 "numOfRooms": 3,
-                "cleaningIncluded": false,
                 "elevator": true,
-                "garage": true,
-                "unoccupiedSince": null
+                "garage": true
               },
               "administration": {
                 "proprietary": "Maria",
@@ -142,7 +140,7 @@ public sealed class PropertyStatusFlowTests
                 status,
                 motivoOciosidade),
             new PropertyDocumentationSectionRequest(null, null, null),
-            new PropertyCharacteristicsSectionRequest(2, false, false, true, null),
+            new PropertyCharacteristicsSectionRequest(2, false, true),
             new PropertyAdministrationSectionRequest(
                 "Maria",
                 null,

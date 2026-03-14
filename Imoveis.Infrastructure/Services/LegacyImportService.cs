@@ -107,6 +107,7 @@ public sealed class LegacyImportService : ILegacyImportService
                     GuarantorName = NormalizeNullable(estate.Guarantor),
                     GuarantorDocument = NormalizeNullable(estate.GuarantorData),
                     GuarantorPhone = NormalizeNullable(estate.GuarantorNumber),
+                    CleaningIncluded = estate.CleaningIncluded ?? false,
                     Status = property.OccupancyStatus == PropertyOccupancyStatus.OCCUPIED ? LeaseStatus.ACTIVE : LeaseStatus.ENDED,
                     Notes = "Importado do legado"
                 };

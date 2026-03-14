@@ -27,6 +27,7 @@ public sealed class LeaseContract : BaseEntity
     public string? GuarantorName { get; set; }
     public string? GuarantorDocument { get; set; }
     public string? GuarantorPhone { get; set; }
+    public bool CleaningIncluded { get; set; }
     public LeaseStatus Status { get; set; } = LeaseStatus.DRAFT;
     public string? Notes { get; set; }
 

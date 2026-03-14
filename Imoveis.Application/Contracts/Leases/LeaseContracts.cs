@@ -21,6 +21,7 @@ public sealed record LeaseCreateRequest(
     string? GuarantorName,
     string? GuarantorDocument,
     string? GuarantorPhone,
+    bool CleaningIncluded,
     string? Notes);
 
 public sealed record LeaseUpdateRequest(
@@ -41,6 +42,7 @@ public sealed record LeaseUpdateRequest(
     string? GuarantorName,
     string? GuarantorDocument,
     string? GuarantorPhone,
+    bool CleaningIncluded,
     string? Notes);
 
 public sealed record LeaseCloseRequest(DateOnly EndDate);
@@ -68,5 +70,6 @@ public sealed record LeaseDto(
     string? GuarantorName,
     string? GuarantorDocument,
     string? GuarantorPhone,
+    bool CleaningIncluded,
     string? Notes,
     DateTime CreatedAtUtc);
