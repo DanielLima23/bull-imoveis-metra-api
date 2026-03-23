@@ -6,3 +6,12 @@ Imoveis.Domain/obj/Debug/net8.0/Imoveis.Domain.AssemblyInfoInputs.cache
 Imoveis.Domain/bin/Debug/net8.0/Imoveis.Domain.dll
 Imoveis.Infrastructure/bin/Debug/net8.0/Imoveis.Application.dll
 Imoveis.Infrastructure/obj/Debug/net8.0/Imoveis.Infrastructure.assets.cache
+/Imoveis.Api/bin
+/Imoveis.Api/bin
+/Imoveis.Api/obj
+/Imoveis.Domain/bin
+/Imoveis.Domain/obj
+/Imoveis.Infrastructure/bin
+/Imoveis.Infrastructure/obj
+/Imoveis.Tests/bin
+/Imoveis.Tests/obj
