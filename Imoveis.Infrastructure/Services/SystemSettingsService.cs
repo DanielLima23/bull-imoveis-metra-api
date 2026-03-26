@@ -9,9 +9,12 @@ namespace Imoveis.Infrastructure.Services;
 
 public sealed class SystemSettingsService : ISystemSettingsService
 {
+    private const string DefaultThemePreset = "SAND_LIGHT";
+    private static readonly ThemePalette LegacyAuroraPalette = new("#1176EE", "#0A58BA", "#06B6D4");
     private static readonly IReadOnlyDictionary<string, ThemePalette> ThemePresets =
         new Dictionary<string, ThemePalette>(StringComparer.OrdinalIgnoreCase)
         {
+            ["SAND_LIGHT"] = new("#8F6A3A", "#5E4525", "#C69A5D"),
             ["AURORA_LIGHT"] = new("#1176EE", "#0A58BA", "#06B6D4"),
             ["EMERALD_LIGHT"] = new("#0F766E", "#115E59", "#22C55E"),
             ["MIDNIGHT_DARK"] = new("#38BDF8", "#0EA5E9", "#22D3EE"),
@@ -83,9 +86,22 @@ public sealed class SystemSettingsService : ISystemSettingsService
 
     private static bool EnsureThemePreset(SystemSettings entity)
     {
-        var themePreset = NormalizeThemePresetOrDefault(entity.ThemePreset);
-        var palette = ThemePresets[themePreset];
         var changed = false;
+        var themePreset = entity.ThemePreset?.Trim().ToUpperInvariant() ?? string.Empty;
+
+        if (!ThemePresets.ContainsKey(themePreset))
+        {
+            themePreset = DefaultThemePreset;
+            changed = true;
+        }
+        else if (IsLegacyAuroraDefault(entity))
+        {
+            themePreset = DefaultThemePreset;
+            entity.PrimaryColor = ThemePresets[DefaultThemePreset].PrimaryColor;
+            entity.SecondaryColor = ThemePresets[DefaultThemePreset].SecondaryColor;
+            entity.AccentColor = ThemePresets[DefaultThemePreset].AccentColor;
+            changed = true;
+        }
 
         if (!string.Equals(entity.ThemePreset, themePreset, StringComparison.Ordinal))
         {
@@ -93,19 +109,21 @@ public sealed class SystemSettingsService : ISystemSettingsService
             changed = true;
         }
 
-        if (!string.Equals(entity.PrimaryColor, palette.PrimaryColor, StringComparison.Ordinal))
+        var palette = ThemePresets[themePreset];
+
+        if (!IsValidHexColor(entity.PrimaryColor))
         {
             entity.PrimaryColor = palette.PrimaryColor;
             changed = true;
         }
 
-        if (!string.Equals(entity.SecondaryColor, palette.SecondaryColor, StringComparison.Ordinal))
+        if (!IsValidHexColor(entity.SecondaryColor))
         {
             entity.SecondaryColor = palette.SecondaryColor;
             changed = true;
         }
 
-        if (!string.Equals(entity.AccentColor, palette.AccentColor, StringComparison.Ordinal))
+        if (!IsValidHexColor(entity.AccentColor))
         {
             entity.AccentColor = palette.AccentColor;
             changed = true;
@@ -155,8 +173,17 @@ public sealed class SystemSettingsService : ISystemSettingsService
     private static string NormalizeThemePresetOrDefault(string? value)
     {
         var normalized = value?.Trim().ToUpperInvariant() ?? string.Empty;
-        return ThemePresets.ContainsKey(normalized) ? normalized : "AURORA_LIGHT";
+        return ThemePresets.ContainsKey(normalized) ? normalized : DefaultThemePreset;
     }
+
+    private static bool IsLegacyAuroraDefault(SystemSettings entity)
+        => string.Equals(entity.ThemePreset, "AURORA_LIGHT", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(entity.PrimaryColor, LegacyAuroraPalette.PrimaryColor, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(entity.SecondaryColor, LegacyAuroraPalette.SecondaryColor, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(entity.AccentColor, LegacyAuroraPalette.AccentColor, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsValidHexColor(string? value)
+        => !string.IsNullOrWhiteSpace(value) && System.Text.RegularExpressions.Regex.IsMatch(value, "^#[0-9A-Fa-f]{6}$");
 
     private static SystemSettingsDto ToDto(SystemSettings entity)
         => new(

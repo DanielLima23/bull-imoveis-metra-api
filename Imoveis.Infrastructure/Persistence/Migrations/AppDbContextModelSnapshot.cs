@@ -1038,7 +1038,7 @@ namespace Imoveis.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)")
-                        .HasDefaultValue("AURORA_LIGHT");
+                        .HasDefaultValue("SAND_LIGHT");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");

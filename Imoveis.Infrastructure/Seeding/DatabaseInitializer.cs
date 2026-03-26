@@ -115,10 +115,10 @@ public static class DatabaseInitializer
         {
             BrandName = "Imoveis Hub",
             BrandShortName = "IH",
-            ThemePreset = "AURORA_LIGHT",
-            PrimaryColor = "#1176EE",
-            SecondaryColor = "#0A58BA",
-            AccentColor = "#06B6D4",
+            ThemePreset = "SAND_LIGHT",
+            PrimaryColor = "#8F6A3A",
+            SecondaryColor = "#5E4525",
+            AccentColor = "#C69A5D",
             EnableAnimations = true
         });
 

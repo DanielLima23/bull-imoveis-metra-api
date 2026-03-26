@@ -25,12 +25,13 @@ public sealed class SystemSettingsGuidedFlowsTests
             initialPublicSettings = ExtractData(await controller.GetPublic(CancellationToken.None));
         }
 
+        Assert.Equal("SAND_LIGHT", initialPublicSettings.ThemePreset);
         Assert.False(initialPublicSettings.EnableGuidedFlows);
 
         var request = new SystemSettingsUpdateRequest(
             "Bull Imoveis",
             "BULL",
-            "AURORA_LIGHT",
+            "SAND_LIGHT",
             true)
         {
             EnableGuidedFlows = true
@@ -56,6 +57,67 @@ public sealed class SystemSettingsGuidedFlowsTests
 
         Assert.True(privateSettings.EnableGuidedFlows);
         Assert.True(publicSettings.EnableGuidedFlows);
+    }
+
+    [Fact]
+    public async Task LegacyAuroraDefaultIsConvertedToSandLightButCustomizedThemeRemainsUntouched()
+    {
+        await using var connection = CreateOpenConnection();
+
+        await using (var seedDbContext = CreateDbContext(connection))
+        {
+            seedDbContext.SystemSettings.AddRange(
+                new Imoveis.Domain.Entities.SystemSettings
+                {
+                    BrandName = "Bull Imoveis",
+                    BrandShortName = "BULL",
+                    ThemePreset = "AURORA_LIGHT",
+                    PrimaryColor = "#1176EE",
+                    SecondaryColor = "#0A58BA",
+                    AccentColor = "#06B6D4",
+                    EnableAnimations = true
+                },
+                new Imoveis.Domain.Entities.SystemSettings
+                {
+                    BrandName = "Bull Imoveis",
+                    BrandShortName = "BULL",
+                    ThemePreset = "AURORA_LIGHT",
+                    PrimaryColor = "#2255AA",
+                    SecondaryColor = "#1D3C7A",
+                    AccentColor = "#5BB4FF",
+                    EnableAnimations = true
+                });
+
+            await seedDbContext.SaveChangesAsync();
+        }
+
+        SystemSettingsDto latestSettings;
+        await using (var dbContext = CreateDbContext(connection))
+        {
+            var controller = CreateController(dbContext);
+            latestSettings = ExtractData(await controller.Get(CancellationToken.None));
+        }
+
+        Assert.Equal("AURORA_LIGHT", latestSettings.ThemePreset);
+        Assert.Equal("#2255AA", latestSettings.PrimaryColor);
+        Assert.Equal("#1D3C7A", latestSettings.SecondaryColor);
+        Assert.Equal("#5BB4FF", latestSettings.AccentColor);
+
+        Imoveis.Domain.Entities.SystemSettings[] persisted;
+        await using (var assertDbContext = CreateDbContext(connection))
+        {
+            persisted = await assertDbContext.SystemSettings.OrderBy(x => x.CreatedAtUtc).ToArrayAsync();
+        }
+
+        Assert.Equal("SAND_LIGHT", persisted[0].ThemePreset);
+        Assert.Equal("#8F6A3A", persisted[0].PrimaryColor);
+        Assert.Equal("#5E4525", persisted[0].SecondaryColor);
+        Assert.Equal("#C69A5D", persisted[0].AccentColor);
+
+        Assert.Equal("AURORA_LIGHT", persisted[1].ThemePreset);
+        Assert.Equal("#2255AA", persisted[1].PrimaryColor);
+        Assert.Equal("#1D3C7A", persisted[1].SecondaryColor);
+        Assert.Equal("#5BB4FF", persisted[1].AccentColor);
     }
 
     private static SqliteConnection CreateOpenConnection()

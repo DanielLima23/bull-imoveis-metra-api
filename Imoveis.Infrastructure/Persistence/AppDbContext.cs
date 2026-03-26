@@ -383,7 +383,7 @@ public sealed class AppDbContext : DbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.BrandName).HasMaxLength(120).IsRequired();
             entity.Property(x => x.BrandShortName).HasMaxLength(8).IsRequired();
-            entity.Property(x => x.ThemePreset).HasMaxLength(40).IsRequired().HasDefaultValue("AURORA_LIGHT");
+            entity.Property(x => x.ThemePreset).HasMaxLength(40).IsRequired().HasDefaultValue("SAND_LIGHT");
             entity.Property(x => x.PrimaryColor).HasMaxLength(7).IsRequired();
             entity.Property(x => x.SecondaryColor).HasMaxLength(7).IsRequired();
             entity.Property(x => x.AccentColor).HasMaxLength(7).IsRequired();
